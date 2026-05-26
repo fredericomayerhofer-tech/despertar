@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<!-- PWA / Home screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Despertar">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f5e6c8">
+
+<!-- Inline SVG icon as data URI for home screen -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23f5e6c8'/%3E%3Ccircle cx='90' cy='90' r='60' fill='none' stroke='%238b5a2b' stroke-width='3' opacity='0.3'/%3E%3Ccircle cx='90' cy='90' r='42' fill='none' stroke='%238b5a2b' stroke-width='2' opacity='0.5'/%3E%3Cpolygon points='90,48 97,78 128,78 104,96 113,126 90,108 67,126 76,96 52,78 83,78' fill='%238b5a2b' opacity='0.85'/%3E%3C/svg%3E">
+
+<!-- Supabase Minimal Client (inline — sem dependência de CDN) -->
+<script>
+// ════════════════════════════════════════════════════════════════
+// SUPABASE MINIMAL CLIENT
+// Implementação mínima do cliente Supabase REST para uso offline-first.
+// Substitui a biblioteca CDN (@supabase/supabase-js).
+// Suporta: select, upsert. Sem realtime, sem auth complexa.
+// Compatível com edge://external-file e file:// protocols.
+// ════════════════════════════════════════════════════════════════
+window.supabase = {
+  createClient: function(url, key) {
+    var base = url + '/rest/v1';
+    var headers = {
+      'apikey':        key,
+      'Authorization': 'Bearer ' + key,
+      'Content-Type':  'application/json',
+      'Prefer':        'return=minimal'
+    };
+
+    function request(method, path, body, extraHeaders) {
+      return fetch(base + path, {
+        method:  method,
+        headers: Object.assign({}, headers, extraHeaders || {}),
+        body:    body ? JSON.stringify(body) : undefined
+      }).then(function(res) {
+        if (res.status === 204 || res.status === 200 || res.status === 201) {
+          return res.text().then(function(text) {
+            return { data: text ? JSON.parse(text) : [], error: null };
+          });
+        }
+        return res.json().then(function(err) {
+          return { data: null, error: { message: err.message || ('HTTP ' + res.status) } };
+        });
+      }).catch(function(e) {
+        return { data: null, error: { message: e.message } };
+      });
+    }
+
+    return {
+      from: function(table) {
+        return {
+          select: function(cols, opts) {
+            var path = '/' + table + '?select=' + (cols || '*');
+            if (opts && opts.head) path += '&limit=0';
+            var extra = opts && opts.count === 'exact' ? { 'Prefer': 'count=exact' } : {};
+            return request('GET', path, null, extra).then(function(r) {
+              // parse order if needed — data already sorted server-side
+              return r;
+            });
+          },
+          order: function(col, opts) {
+            // chained after select — rebuild with order param
+            var asc = !opts || opts.ascending !== false;
+            var path = '/' + table + '?select=*&order=' + col + (asc ? '.asc' : '.desc');
+            return request('GET', path);
+          },
+          upsert: function(data, opts) {
+            var conflict = (opts && opts.onConflict) ? opts.onConflict : 'id';
+            var extra = { 'Prefer': 'resolution=merge-duplicates,return=minimal' };
+            var body = Array.isArray(data) ? data : [data];
+            return request('POST', '/' + table + '?on_conflict=' + conflict, body, extra);
+          }
+        };
+      }
+    };
+  }
+};
+// ════════════════════════════════════════════════════════════════
+// FIM: SUPABASE MINIMAL CLIENT
+// ════════════════════════════════════════════════════════════════
+</script>
+
+
+<title>Despertar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Lato',sans-serif;background:linear-gradient(155deg,#fdf6e3 0%,#f5e6c8 55%,#ede0c4 100%);min-height:100vh;color:#1e0e04;-webkit-text-size-adjust:100%}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:#c8b89a;border-radius:2px}
+input,textarea,select{font-family:'Lato',sans-serif;-webkit-appearance:none}
+textarea{resize:none}
+textarea:focus,input:focus{outline:none}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;width:100%;height:20px}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:rgba(139,90,43,0.12)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;margin-top:-9px;cursor:pointer;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.18)}
+
+/* Layout */
+#header{position:sticky;top:0;z-index:100;background:rgba(248,238,215,0.97);backdrop-filter:blur(10px);border-bottom:1px solid rgba(139,90,43,0.14);padding:10px 20px 14px}
+#header-inner{max-width:680px;margin:0 auto;display:flex;align-items:center;justify-content:center;padding:0}
+.logo-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;font-style:italic;letter-spacing:0.04em;color:#3a2008}
+.logo-sub{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#a07850;margin-top:2px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{background:transparent;border:none;font-size:11px;color:#a07850;cursor:pointer;padding:6px 9px;border-radius:6px;font-family:'Lato',sans-serif;transition:all 0.15s;white-space:nowrap;flex-shrink:0}
+.tab.active{background:rgba(139,90,43,0.1);color:#2a1408;font-weight:400}
+.tab:hover{color:#2a1408}
+
+#content{max-width:680px;margin:0 auto;padding:24px 20px 100px}
+
+/* Sections */
+.page{display:none}
+.page.active{display:block}
+
+/* Home opening page */
+.home-logo-wrap{text-align:center;padding:16px 0 12px}
+.home-logo-star{font-size:20px;color:#c8a96e;display:block;margin-bottom:10px}
+.home-logo-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;font-style:italic;color:#2a1408;letter-spacing:0.04em;line-height:1}
+.home-logo-sub{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#a07850;margin-top:8px}
+.home-divider{height:1px;background:linear-gradient(to right,transparent,rgba(139,90,43,0.22),transparent);margin:14px 0}
+.home-what{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:300;line-height:1.65;color:#3a2008;text-align:center}
+.manifesto-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#a07850;text-align:center;margin-bottom:18px}
+.amor-wrap{display:flex;flex-direction:column;gap:10px;margin-bottom:4px}
+.amor-row{display:flex;align-items:flex-start;gap:14px}
+.amor-letter{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:#c8a96e;line-height:1;width:28px;flex-shrink:0;text-align:center}
+.amor-content{flex:1;padding-top:3px}
+.amor-title{font-size:11px;font-weight:400;letter-spacing:0.08em;text-transform:uppercase;color:#2a1408;margin-bottom:3px}
+.amor-desc{font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:#5a3818;line-height:1.5}
+
+/* Home grid */
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:24px}
+.home-card{background:rgba(245,235,215,0.92);border:1px solid rgba(139,90,43,0.13);border-radius:12px;padding:22px 18px;cursor:pointer;transition:all 0.2s}
+.home-card:hover{box-shadow:0 4px 20px rgba(139,90,43,0.12);transform:translateY(-2px)}
+.hc-icon{font-size:18px;color:#c8a96e;margin-bottom:9px}
+.hc-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#2a1408;margin-bottom:6px}
+.hc-desc{font-size:12px;color:#5a3818;line-height:1.55}
+.hc-count{font-size:11px;color:#a07850;margin-top:8px}
+
+/* Reference */
+.ref-wrap{background:rgba(245,235,215,0.65);border:1px solid rgba(139,90,43,0.09);border-radius:10px;padding:20px 18px}
+.ref-title{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#a07850;margin-bottom:14px}
+.ref-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ref-item{display:flex;align-items:center;gap:8px}
+.ref-num{width:21px;height:21px;border-radius:50%;background:rgba(200,169,110,0.18);display:flex;align-items:center;justify-content:center;font-size:10px;color:#8b5a2b;flex-shrink:0}
+.ref-label{font-size:12px;color:#3a2008;line-height:1.3}
+
+/* Page head */
+.page-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;font-style:italic;color:#2a1408}
+.btn-new{background:#8b5a2b;color:#fdf6e3;border:none;padding:9px 16px;border-radius:7px;font-size:12px;letter-spacing:0.05em;cursor:pointer;font-family:'Lato',sans-serif;transition:background 0.2s}
+.btn-new:hover{background:#5c3d1e}
+.btn-new.green{background:#3a6a3a}
+.btn-new.green:hover{background:#2a4a2a}
+
+/* Back button */
+.back-btn{background:transparent;border:none;font-size:11px;color:#a07850;cursor:pointer;padding:4px 0;margin-bottom:14px;display:block;font-family:'Lato',sans-serif;letter-spacing:0.04em}
+.back-btn:hover{color:#2a1408}
+
+/* Form */
+.form-wrap{max-width:560px;margin:0 auto}
+.form-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;font-style:italic;color:#2a1408;margin-bottom:3px}
+.form-title.green{color:#1a3a1a}
+.form-date{font-size:11px;color:#a07850;letter-spacing:0.04em;margin-bottom:4px}
+.divider{height:1px;background:rgba(139,90,43,0.1);margin:16px 0}
+.section{margin-bottom:22px}
+.lbl{font-size:10px;letter-spacing:0.11em;color:#3a2008;margin-bottom:4px;text-transform:uppercase}
+.hint{font-size:11px;color:#a07850;margin-bottom:8px}
+.req{color:#c8693a}
+.opt{color:#a07850;text-transform:none;letter-spacing:0;font-size:11px}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;border:1px solid rgba(139,90,43,0.18);background:rgba(245,235,215,0.88);cursor:pointer;font-size:12px;color:#3a2008;transition:all 0.15s;user-select:none}
+.chip.on{background:#8b5a2b;border-color:#8b5a2b;color:#fdf6e3}
+.chip-n{width:17px;height:17px;border-radius:50%;background:rgba(139,90,43,0.1);display:flex;align-items:center;justify-content:center;font-size:9px;color:#8b5a2b;flex-shrink:0}
+.chip.on .chip-n{background:rgba(253,246,227,0.22);color:#fdf6e3}
+
+/* Score slider */
+.score-block{margin-bottom:12px;padding:13px 15px;background:rgba(245,235,215,0.85);border-radius:8px;border:1px solid rgba(139,90,43,0.1)}
+.score-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.score-label{font-size:15px;color:#2a1408;font-family:'Cormorant Garamond',serif;font-style:italic}
+.score-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:10px}
+.score-val{font-size:24px;font-family:'Cormorant Garamond',serif;font-weight:300;line-height:1}
+.score-lbl{font-size:10px;letter-spacing:0.08em;text-transform:uppercase}
+.score-ticks{display:flex;justify-content:space-between;margin-top:4px}
+.score-tick{font-size:9px;color:#c8b89a}
+
+/* Avg badge */
+.avg-badge{display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:6px}
+.avg-label{font-size:10px;color:#a07850;letter-spacing:0.08em;text-transform:uppercase}
+.avg-val{font-size:20px;font-family:'Cormorant Garamond',serif;font-weight:300}
+.avg-lbl{font-size:10px;letter-spacing:0.06em}
+
+/* Inputs */
+textarea.ta{width:100%;background:rgba(245,235,215,0.90);border:1px solid rgba(139,90,43,0.14);border-radius:8px;padding:13px 15px;font-size:14px;color:#1e0e04;line-height:1.65;transition:border 0.2s}
+textarea.ta:focus{border-color:rgba(139,90,43,0.4)}
+input.inp{width:100%;background:rgba(245,235,215,0.90);border:1px solid rgba(139,90,43,0.14);border-radius:8px;padding:11px 14px;font-size:13px;color:#1e0e04;line-height:1.5}
+input.inp:focus{border-color:rgba(139,90,43,0.4)}
+
+/* Save button */
+.save-btn{width:100%;padding:14px;background:#8b5a2b;color:#fdf6e3;border:none;border-radius:8px;font-size:13px;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;font-family:'Lato',sans-serif;margin-top:4px}
+.save-btn:hover{background:#5c3d1e}
+.save-btn.ok{background:#5a8b4a}
+.save-btn.green{background:#3a6a3a}
+.save-btn.green:hover{background:#2a4a2a}
+.save-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Suggest button */
+.sug-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(100,80,160,0.03);border:1px dashed rgba(100,80,160,0.22);color:#6450a0;padding:12px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s;width:100%;font-family:'Lato',sans-serif}
+.sug-btn:hover{background:rgba(100,80,160,0.07);border-color:rgba(100,80,160,0.3)}
+.sug-btn.copied{background:rgba(80,120,80,0.06);border-color:rgba(80,120,80,0.25);color:#3a6a3a}
+.sug-btn:disabled{opacity:0.45;cursor:not-allowed}
+.sug-box{background:rgba(100,80,160,0.04);border:1px solid rgba(100,80,160,0.13);border-radius:10px;padding:16px 18px;margin-top:10px}
+.sug-star{font-size:14px;color:#9070c0;margin-bottom:7px}
+.sug-text{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:#1a0a2a;line-height:1.75}
+
+/* Cards */
+.card-list{display:flex;flex-direction:column;gap:10px}
+.d-card{background:rgba(245,235,215,0.88);border:1px solid rgba(139,90,43,0.11);border-radius:10px;padding:16px 18px;cursor:pointer;transition:all 0.2s}
+.d-card:hover{background:rgba(255,248,235,0.95);border-color:#c8a96e}
+.d-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.d-card-date{font-size:10px;color:#a07850;letter-spacing:0.04em}
+.d-card-right{display:flex;align-items:center;gap:10px}
+.d-card-title{font-family:'Cormorant Garamond',serif;font-size:17px;color:#1e0e04;margin-bottom:6px;font-weight:400}
+.small-tag{font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(139,90,43,0.09);color:#5a3008}
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.preview{font-size:13px;color:#3a2008;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.empty{text-align:center;padding:60px 0;font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;color:#a07850;line-height:1.9}
+
+/* Detail */
+.detail-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#1e0e04;margin-bottom:3px}
+.tag-lg{font-size:12px;padding:6px 13px;border-radius:14px;background:rgba(139,90,43,0.1);color:#3a2008;border:1px solid rgba(139,90,43,0.13);display:inline-flex;align-items:center;gap:4px;margin:0 6px 6px 0}
+.d-block{margin-bottom:20px;border-left:2px solid rgba(200,169,110,0.35);padding-left:14px}
+.d-lbl{font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#a07850;margin-bottom:5px}
+.d-txt{font-size:15px;line-height:1.75;color:#1e0e04;font-family:'Cormorant Garamond',serif}
+.delete-btn{background:transparent;border:1px solid rgba(180,60,40,0.18);color:#b04030;padding:9px 16px;border-radius:6px;font-size:11px;cursor:pointer;margin-top:8px;font-family:'Lato',sans-serif;letter-spacing:0.04em}
+.edit-btn{background:transparent;border:1px solid rgba(139,90,43,0.22);color:#8b5a2b;padding:9px 16px;border-radius:6px;font-size:11px;cursor:pointer;margin-top:8px;margin-right:8px;font-family:'Lato',sans-serif;letter-spacing:0.04em}
+
+/* Learn */
+.l-card{background:rgba(240,250,240,0.65);border:1px solid rgba(80,120,80,0.12);border-radius:10px;padding:16px 18px;cursor:pointer;transition:all 0.2s}
+.l-card:hover{background:rgba(245,255,245,0.9);border-color:#8aaa8a}
+.l-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.l-type{font-size:11px;color:#4a7a4a;letter-spacing:0.06em}
+.l-date{font-size:10px;color:#7a9a7a}
+.l-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:#1a3a1a;margin-bottom:6px;line-height:1.3}
+.l-preview{font-size:12px;color:#4a6a4a;line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:8px}
+.l-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(80,120,80,0.1);color:#2a5a2a;display:inline-block;margin:0 4px 4px 0}
+.learn-bar{margin-bottom:18px}
+.search-inp{width:100%;background:rgba(240,250,240,0.7);border:1px solid rgba(80,120,80,0.15);border-radius:8px;padding:10px 14px;font-size:13px;color:#1a3a1a;margin-bottom:10px;font-family:'Lato',sans-serif}
+.search-inp:focus{outline:none;border-color:rgba(80,120,80,0.35)}
+.tag-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.tag-bar-lbl{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#5a8a5a;margin-right:2px}
+.tag-pill{font-size:11px;padding:4px 11px;border-radius:12px;background:rgba(80,120,80,0.1);color:#2a5a2a;cursor:pointer;transition:background 0.15s;user-select:none;border:1px solid rgba(80,120,80,0.12)}
+.tag-pill:hover{background:rgba(80,120,80,0.22)}
+.tag-pill.on{background:#3a6a3a;color:#e8f5e8;border-color:#3a6a3a}
+.clear-filter{font-size:11px;color:#a07850;cursor:pointer;margin-left:4px;text-decoration:underline}
+.group{margin-bottom:26px}
+.group-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(80,120,80,0.12)}
+.group-tag{font-family:'Cormorant Garamond',serif;font-size:18px;color:#1a3a1a;font-style:italic}
+.group-count{font-size:11px;color:#7a9a7a;background:rgba(80,120,80,0.08);padding:2px 8px;border-radius:10px}
+
+/* Tag input */
+.tag-input-wrap{position:relative}
+.tag-inp{width:100%;background:rgba(245,235,215,0.90);border:1px solid rgba(139,90,43,0.14);border-radius:8px;padding:11px 14px;font-size:13px;color:#1e0e04;font-family:'Lato',sans-serif}
+.tag-inp:focus{outline:none;border-color:rgba(139,90,43,0.4)}
+.tag-suggestions{position:absolute;top:100%;left:0;right:0;background:#fdf6e3;border:1px solid rgba(139,90,43,0.15);border-radius:6px;z-index:50;margin-top:2px;box-shadow:0 4px 14px rgba(0,0,0,0.08)}
+.tag-suggestion{padding:8px 14px;font-size:12px;color:#3a2008;cursor:pointer}
+.tag-suggestion:hover{background:rgba(139,90,43,0.06)}
+.tag-existing{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(80,120,80,0.12);color:#2a5a2a;border:1px solid rgba(80,120,80,0.18);margin:0 5px 5px 0}
+.tag-x{cursor:pointer;font-size:13px;line-height:1;color:#5a8a5a;margin-left:2px}
+
+/* Baseline */
+.bl-block{margin-bottom:16px;background:rgba(245,235,215,0.75);border:1px solid rgba(139,90,43,0.12);border-radius:12px;padding:16px 18px}
+.bl-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.bl-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.bl-num{width:24px;height:24px;border-radius:50%;background:rgba(200,169,110,0.22);display:flex;align-items:center;justify-content:center;font-size:10px;color:#8b5a2b;flex-shrink:0}
+.bl-arm-label{font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:#2a1408;line-height:1.3}
+.bl-score-right{display:flex;align-items:baseline;gap:6px;flex-shrink:0;margin-left:10px}
+.bl-score-num{font-size:22px;font-family:'Cormorant Garamond',serif;font-weight:300;line-height:1}
+.bl-score-lbl{font-size:10px;letter-spacing:0.07em;text-transform:uppercase}
+.bl-ticks{display:flex;justify-content:space-between;margin-bottom:10px}
+.bl-tick{font-size:9px;color:#c8b89a}
+.bl-fields{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.bl-field{border-left:2px solid rgba(200,169,110,0.3);padding-left:12px}
+.bl-field-label{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#a07850;margin-bottom:5px}
+textarea.bl-ta{width:100%;background:rgba(245,235,215,0.94);border:1px solid rgba(139,90,43,0.12);border-radius:7px;padding:9px 11px;font-size:13px;color:#1e0e04;line-height:1.6;font-family:'Lato',sans-serif;resize:none}
+textarea.bl-ta:focus{outline:none;border-color:rgba(139,90,43,0.35)}
+
+/* Export/Import bar */
+.data-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.data-btn{flex:1;min-width:120px;padding:10px;border-radius:7px;font-size:12px;font-family:'Lato',sans-serif;cursor:pointer;letter-spacing:0.04em;transition:all 0.2s;text-align:center}
+.data-btn.export{background:rgba(139,90,43,0.08);border:1px solid rgba(139,90,43,0.2);color:#3a2008}
+.data-btn.export:hover{background:rgba(139,90,43,0.15)}
+.data-btn.import{background:rgba(80,120,80,0.08);border:1px solid rgba(80,120,80,0.2);color:#2a5a2a}
+.data-btn.import:hover{background:rgba(80,120,80,0.15)}
+
+/* Prompt hidden */
+#prompt-ta{position:absolute;left:-9999px;top:0;width:1px;height:1px}
+
+/* Report modal */
+.report-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:rgba(245,235,215,0.85);border:1px solid rgba(139,90,43,0.1);border-radius:8px;cursor:pointer;transition:all 0.15s;user-select:none}
+.report-item.selected{background:rgba(139,90,43,0.08);border-color:rgba(139,90,43,0.25)}
+.report-item-check{width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(139,90,43,0.3);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all 0.15s}
+.report-item.selected .report-item-check{background:#8b5a2b;border-color:#8b5a2b;color:#fdf6e3}
+.report-item-title{font-family:'Cormorant Garamond',serif;font-size:15px;color:#1e0e04;margin-bottom:2px}
+.report-item-meta{font-size:10px;color:#a07850;letter-spacing:0.03em}
+
+/* Diary search */
+.diary-search-bar{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.diary-search-row{display:flex;gap:8px}
+.diary-search-inp{flex:1;background:rgba(245,235,215,0.90);border:1px solid rgba(139,90,43,0.14);border-radius:8px;padding:10px 14px;font-size:13px;color:#1e0e04;font-family:'Lato',sans-serif}
+.diary-search-inp:focus{outline:none;border-color:rgba(139,90,43,0.35)}
+.diary-date-inp{background:rgba(245,235,215,0.90);border:1px solid rgba(139,90,43,0.14);border-radius:8px;padding:10px 10px;font-size:12px;color:#1e0e04;font-family:'Lato',sans-serif;width:140px}
+.diary-date-inp:focus{outline:none;border-color:rgba(139,90,43,0.35)}
+.diary-clear{background:none;border:none;font-size:11px;color:#a07850;cursor:pointer;font-family:'Lato',sans-serif;text-decoration:underline;padding:0;align-self:center}
+
+/* Inner nav */
+.inner-nav{display:flex;gap:4px;padding:10px 0 14px;border-bottom:1px solid rgba(139,90,43,0.1);margin-bottom:18px;flex-wrap:nowrap;overflow-x:auto}
+.inner-tab{background:transparent;border:none;font-size:11px;color:#a07850;cursor:pointer;padding:5px 10px;border-radius:6px;font-family:'Lato',sans-serif;white-space:nowrap;transition:all 0.15s;flex-shrink:0}
+.inner-tab:hover{color:#2a1408;background:rgba(139,90,43,0.06)}
+.inner-tab.active-tab{background:rgba(139,90,43,0.1);color:#2a1408;font-weight:400}
+
+/* IA note */
+.ia-note{font-size:11px;color:#a07850;font-style:italic;text-align:center;line-height:1.6;margin-bottom:14px;padding:0 8px}
+
+/* Arm suggest */
+.arm-suggest-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(139,90,43,0.04);border:1px dashed rgba(139,90,43,0.22);color:#8b5a2b;padding:11px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s;width:100%;font-family:'Lato',sans-serif;margin-top:6px}
+.arm-suggest-btn:hover{background:rgba(139,90,43,0.08);border-color:rgba(139,90,43,0.35)}
+.arm-suggest-btn.copied{background:rgba(80,120,80,0.06);border-color:rgba(80,120,80,0.25);color:#3a6a3a}
+</style>
+</head>
+<body>
+<style>
+/* Safe area for iPhone notch / Dynamic Island */
+#header { padding-top: env(safe-area-inset-top, 0px); }
+body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+</style>
+
+<div id="header">
+  <div id="header-inner">
+    <div class="logo-title" onclick="setTab('home')" style="cursor:pointer">Despertar</div>
+  </div>
+</div>
+
+<div id="content">
+
+  <!-- HOME -->
+  <div id="page-home" class="page active">
+    <div class="home-divider" style="margin-top:4px"></div>
+
+    <p class="home-what">
+      Um lugar de conversa consigo mesmo. Aqui você traz o que chama atenção na sua mente, expõe suas emoções e olha para si — sobre o que é e o que gostaria que fosse. Sem juiz, sem julgamento. Só clareza, aceitação, auto-perdão e atitude transformadora.
+    </p>
+
+    <div class="home-divider"></div>
+
+    <div class="manifesto-label">Bússola</div>
+    <div class="amor-wrap">
+      <div class="amor-row">
+        <div class="amor-letter">A</div>
+        <div class="amor-content">
+          <div class="amor-title">Acolhimento sem autopiedade</div>
+          <div class="amor-desc">Receber-se como é, sem drama e sem negação. A presença plena consigo mesmo.</div>
+        </div>
+      </div>
+      <div class="amor-row">
+        <div class="amor-letter">M</div>
+        <div class="amor-content">
+          <div class="amor-title">Maestria do observador</div>
+          <div class="amor-desc">Notar o padrão antes de repeti-lo. Quem observa já não é o mesmo que reage.</div>
+        </div>
+      </div>
+      <div class="amor-row">
+        <div class="amor-letter">O</div>
+        <div class="amor-content">
+          <div class="amor-title">Olhar sem julgamento</div>
+          <div class="amor-desc">Ver o que é, sem condenar. A clareza que só vem quando o juiz se cala.</div>
+        </div>
+      </div>
+      <div class="amor-row">
+        <div class="amor-letter">R</div>
+        <div class="amor-content">
+          <div class="amor-title">Renascimento da sua essência</div>
+          <div class="amor-desc">Não uma melhora do antigo eu — um novo começo. Nascer de novo, a cada momento.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-divider"></div>
+
+    <div class="home-grid">
+      <div class="home-card" onclick="setTab('diary');showDiaryNew()">
+        <div class="hc-icon">✦</div>
+        <div class="hc-title">Diário</div>
+        <div class="hc-desc">Traga os momentos que surgem — situações, padrões, percepções.</div>
+        <div class="hc-count" id="hc-diary-count">Nenhum momento ainda</div>
+      </div>
+      <div class="home-card" onclick="setTab('learn');showLearnNew()">
+        <div class="hc-icon">◎</div>
+        <div class="hc-title">Aprendizados</div>
+        <div class="hc-desc">Traga o que estudou, leu, refletiu ou descobriu.</div>
+        <div class="hc-count" id="hc-learn-count">Repertório vazio</div>
+      </div>
+    </div>
+
+    <div class="ref-wrap">
+      <div class="ref-title" onclick="setTab('baseline')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">ESTADOS EMOCIONAIS <span style="font-size:10px;color:#c8a96e;letter-spacing:0.04em">meu mapa →</span></div>
+      <div class="ref-grid" id="ref-grid"></div>
+    </div>
+
+    <!-- Sync status (discreto) -->
+    <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(139,90,43,0.08);text-align:center">
+      <div id="backup-status" style="font-size:10px;color:#a07850;letter-spacing:0.04em;min-height:14px"></div>
+      <div id="offline-notice" style="display:none;background:rgba(200,140,40,0.08);border:1px solid rgba(200,140,40,0.2);border-radius:7px;padding:8px 12px;font-size:11px;color:#7a5a10;line-height:1.5;margin-top:8px">
+        ⚠ Sem conexão — dados salvos localmente.
+      </div>
+      <!-- BOTAO TEMPORARIO: remover apos confirmacao de sync -->
+      <div id="force-sync-wrap" style="margin-top:10px">
+        <button onclick="forceSyncNow()" style="background:rgba(74,122,74,0.1);border:1px solid rgba(74,122,74,0.3);font-size:11px;color:#4a7a4a;cursor:pointer;font-family:'Lato',sans-serif;padding:8px 18px;border-radius:20px;letter-spacing:0.04em">
+          ☁ Sincronizar tudo agora
+        </button>
+        <div id="force-sync-status" style="font-size:10px;color:#a07850;margin-top:6px;min-height:14px"></div>
+      </div>
+    </div>
+
+    <!-- Report -->
+    <div style="text-align:center;margin-top:16px;padding-top:12px;border-top:1px solid rgba(139,90,43,0.06);display:flex;flex-direction:column;align-items:center;gap:10px">
+      <button onclick="openReportModal()" id="report-btn" style="background:rgba(139,90,43,0.06);border:1px solid rgba(139,90,43,0.18);font-size:12px;color:#8b5a2b;cursor:pointer;font-family:'Lato',sans-serif;letter-spacing:0.06em;padding:8px 18px;border-radius:20px;transition:all 0.2s;text-transform:uppercase">
+        ◈ &nbsp;Minha Jornada
+      </button>
+      <button onclick="setTab('config')" style="background:none;border:none;font-size:10px;color:#c8b89a;cursor:pointer;font-family:'Lato',sans-serif;letter-spacing:0.06em;padding:2px 8px;text-transform:uppercase">
+        ⚙ &nbsp;Configuracoes
+      </button>
+      <button onclick="setTab('about')" style="background:none;border:none;font-size:10px;color:#c8b89a;cursor:pointer;font-family:'Lato',sans-serif;letter-spacing:0.06em;padding:2px 8px;text-transform:uppercase">
+        sobre o despertar
+      </button>
+    </div>
+
+  <!-- Report Modal -->
+  <div id="report-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:rgba(58,42,26,0.5);backdrop-filter:blur(4px)" onclick="closeReportModal(event)">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:#fdf6e3;border-radius:20px 20px 0 0;padding:28px 24px 40px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+
+      <div style="width:36px;height:4px;background:rgba(139,90,43,0.2);border-radius:2px;margin:0 auto 24px"></div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;font-style:italic;color:#2a1408;margin-bottom:6px">Minha Jornada</div>
+      <div style="font-size:12px;color:#a07850;line-height:1.6;margin-bottom:20px">Selecione os momentos a incluir. Os Aprendizados e o Gabarito serão sempre incluídos como contexto.</div>
+
+      <!-- Select all / none -->
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <button onclick="selectAllDiary(true)" style="flex:1;padding:8px;background:rgba(139,90,43,0.07);border:1px solid rgba(139,90,43,0.15);border-radius:7px;font-size:11px;color:#3a2008;cursor:pointer;font-family:'Lato',sans-serif">Selecionar todos</button>
+        <button onclick="selectAllDiary(false)" style="flex:1;padding:8px;background:transparent;border:1px solid rgba(139,90,43,0.12);border-radius:7px;font-size:11px;color:#a07850;cursor:pointer;font-family:'Lato',sans-serif">Limpar seleção</button>
+      </div>
+
+      <!-- Diary entries list -->
+      <div id="report-diary-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;max-height:35vh;overflow-y:auto"></div>
+
+      <!-- Generate button -->
+      <button onclick="copyReportPrompt()" id="report-gen-btn" style="width:100%;padding:14px;background:#8b5a2b;color:#fdf6e3;border:none;border-radius:8px;font-size:13px;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;font-family:'Lato',sans-serif;transition:all 0.2s">
+        Copiar prompt para Claude
+      </button>
+      <button onclick="closeReportModal(null)" style="width:100%;padding:11px;background:transparent;border:none;font-size:12px;color:#a07850;cursor:pointer;font-family:'Lato',sans-serif;margin-top:8px">cancelar</button>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- DIARY -->
+  <div id="page-diary" class="page">
+      <div class="inner-nav">
+        <button class="inner-tab" onclick="setTab('home')">Início</button>
+        <button class="inner-tab" onclick="setTab('diary')" id="tab-diary">Diário</button>
+        <button class="inner-tab" onclick="setTab('learn')" id="tab-learn">Repertório</button>
+        <button class="inner-tab" onclick="setTab('baseline')" id="tab-baseline">Estados Mentais</button>
+        <button class="inner-tab" onclick="setTab('analyses')" id="tab-analyses">Jornada</button>
+        <button class="inner-tab" onclick="setTab('about')" id="tab-about">Sobre</button>
+      </div>
+    <!-- LIST -->
+    <div id="diary-list">
+      <div class="page-head">
+        <div class="page-title">Diário</div>
+        <button class="btn-new" onclick="showDiaryNew()">+ Novo</button>
+      </div>
+      <!-- Search bar -->
+      <div class="diary-search-bar" id="diary-search-bar">
+        <div class="diary-search-row">
+          <input class="diary-search-inp" id="diary-keyword" placeholder="Buscar por palavra-chave..." oninput="renderDiaryList()">
+        </div>
+        <div class="diary-search-row">
+          <input class="diary-date-inp" type="date" id="diary-date-from" onchange="renderDiaryList()" title="De">
+          <span style="align-self:center;font-size:11px;color:#a07850;flex-shrink:0">até</span>
+          <input class="diary-date-inp" type="date" id="diary-date-to" onchange="renderDiaryList()" title="Até">
+          <button class="diary-clear" onclick="clearDiarySearch()">limpar</button>
+        </div>
+      </div>
+      <div id="diary-cards" class="card-list"></div>
+    </div>
+    <!-- NEW/EDIT -->
+    <div id="diary-new" style="display:none">
+      <div class="form-wrap">
+        <button class="back-btn" onclick="showDiaryList()">← voltar</button>
+        <div class="form-title" id="diary-form-title">Novo Momento</div>
+        <div class="form-date" id="diary-form-date"></div>
+        <div class="divider"></div>
+        <div class="section">
+          <div class="lbl">Título <span class="opt">· opcional</span></div>
+          <input class="inp" id="d-title" placeholder="Nome curto para este momento...">
+        </div>
+        <div class="section">
+          <div class="lbl">Padrões presentes <span class="req">*</span></div>
+          <div class="hint">Quais padrões estiveram presentes?</div>
+          <div class="chips" id="d-chips"></div>
+        </div>
+        <div id="d-scores-section" style="display:none">
+          <div class="section">
+            <div class="lbl">Como estou com cada um?</div>
+            <div class="hint">0 = muito presente · 10 = quase livre</div>
+            <div id="d-sliders"></div>
+            <div class="avg-badge" id="d-avg-badge"></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="lbl">O que surgiu? <span class="req">*</span></div>
+          <div class="hint">Situação, contexto, pessoa envolvida · <span style="color:#c8a96e">use o 🎤 do teclado para ditar</span></div>
+          <textarea class="ta" id="d-situation" rows="4" placeholder="O que surgiu — situação, contexto, pessoa envolvida..."></textarea>
+        </div>
+        <div class="section">
+          <div class="lbl">Como me percebi?</div>
+          <div class="hint">Emoções, reações, impulsos que emergiram neste momento</div>
+          <textarea class="ta" id="d-howfelt" rows="3" placeholder="Como me percebi neste momento..."></textarea>
+        </div>
+        <div class="section">
+          <div class="lbl">O que escolho?</div>
+          <div class="hint">Intenção genuína + ação concreta — como desejo ser e o que faço a partir daqui</div>
+          <textarea class="ta" id="d-action" rows="4" placeholder="Escolho: [meu desejo autêntico aqui]&#10;&#10;Ação: [o que faço concretamente]"></textarea>
+        </div>
+        <div class="section">
+          <div class="lbl">Quais armadilhas estão aqui? <span class="opt">· IA</span></div>
+          <div class="hint">Cole no chat — Claude identifica as 3 armadilhas mais presentes no seu relato</div>
+          <button class="arm-suggest-btn" id="arm-suggest-btn" onclick="copyArmSuggest()">◈ &nbsp;Quais armadilhas estão aqui? (IA)</button>
+        </div>
+
+        <div class="section">
+          <div class="lbl">Que tal se… <span class="opt">· IA</span></div>
+          <div class="hint">Copie o prompt, cole no chat com Claude e receba sua reflexão</div>
+          <button class="sug-btn" id="sug-btn" onclick="copyPrompt()" disabled>✦ &nbsp;Quer uma reflexão da IA?</button>
+          <textarea id="prompt-ta" readonly></textarea>
+          <div style="margin-top:14px">
+            <div class="lbl" style="margin-bottom:6px">Cole aqui a sugestão recebida</div>
+            <textarea class="ta" id="d-suggestion" rows="3" placeholder="Cole aqui o 'Que tal se…' que o Claude te retornou..." style="border-style:dashed"></textarea>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="ia-note">Caso escolha interagir com a IA, não é para aconselhamento — mas para trazer mais luz sobre o que está posto.</div>
+        <button class="save-btn" id="diary-save-btn" onclick="saveDiary()">Trazer este momento</button>
+        </div>
+    </div>
+    <!-- DETAIL -->
+    <div id="diary-detail" style="display:none">
+      <div class="form-wrap">
+        <button class="back-btn" onclick="showDiaryList()">← diário</button>
+        <div id="detail-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEARN -->
+  <div id="page-learn" class="page">
+      <div class="inner-nav">
+        <button class="inner-tab" onclick="setTab('home')">Início</button>
+        <button class="inner-tab" onclick="setTab('diary')" id="tab-diary">Diário</button>
+        <button class="inner-tab" onclick="setTab('learn')" id="tab-learn">Repertório</button>
+        <button class="inner-tab" onclick="setTab('baseline')" id="tab-baseline">Estados Mentais</button>
+        <button class="inner-tab" onclick="setTab('analyses')" id="tab-analyses">Jornada</button>
+        <button class="inner-tab" onclick="setTab('about')" id="tab-about">Sobre</button>
+      </div>
+    <div id="learn-list">
+      <div class="page-head">
+        <div class="page-title">Repertório</div>
+        <button class="btn-new green" onclick="showLearnNew()">+ Novo</button>
+      </div>
+      <div class="learn-bar">
+        <input class="search-inp" id="learn-search" placeholder="Buscar por título ou conteúdo..." oninput="renderLearnList()">
+        <div class="tag-bar" id="learn-tag-bar"></div>
+      </div>
+      <div id="learn-cards"></div>
+    </div>
+    <div id="learn-new" style="display:none">
+      <div class="form-wrap">
+        <button class="back-btn" onclick="showLearnList()">← voltar</button>
+        <div class="form-title green">Novo Aprendizado</div>
+        <div class="form-date" id="learn-form-date"></div>
+        <div class="divider"></div>
+        <div class="section">
+          <div class="lbl">Título / tema <span class="req">*</span></div>
+          <input class="inp" id="l-title" placeholder="Nome do livro, tema, conceito, pessoa...">
+        </div>
+        <div class="section">
+          <div class="lbl">Anotação livre</div>
+          <div class="hint">O que captou você, o que ficou, o que não compreendeu</div>
+          <textarea class="ta" id="l-content" rows="6" placeholder="Escreva livremente..."></textarea>
+        </div>
+        <div class="section">
+          <div class="lbl">Tags</div>
+          <div class="hint">Para agrupar e encontrar depois</div>
+          <div id="l-tags-display" style="margin-bottom:6px"></div>
+          <div class="tag-input-wrap">
+            <input class="tag-inp" id="l-tag-input" placeholder="Adicionar tag e pressionar Enter..." onkeydown="handleTagKey(event)" oninput="showTagSuggestions()">
+            <div class="tag-suggestions" id="tag-suggestions" style="display:none"></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="lbl">Fonte ou link <span class="opt">· opcional</span></div>
+          <input class="inp" id="l-source" placeholder="URL, nome do autor, nome do curso...">
+        </div>
+        <div class="divider"></div>
+        <button class="save-btn green" onclick="saveLearn()">Salvar Aprendizado</button>
+      </div>
+    </div>
+    <div id="learn-detail" style="display:none">
+      <div class="form-wrap">
+        <button class="back-btn" onclick="showLearnList()">← aprendizados</button>
+        <div id="learn-detail-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYSES -->
+  <div id="page-analyses" class="page">
+    <div class="inner-nav">
+      <button class="inner-tab" onclick="setTab('home')">Início</button>
+      <button class="inner-tab" onclick="setTab('diary')" id="tab-diary">Diário</button>
+      <button class="inner-tab" onclick="setTab('learn')" id="tab-learn">Repertório</button>
+      <button class="inner-tab" onclick="setTab('baseline')" id="tab-baseline">Estados Mentais</button>
+      <button class="inner-tab active-tab" onclick="setTab('analyses')" id="tab-analyses">Jornada</button>
+      <button class="inner-tab" onclick="setTab('about')" id="tab-about">Sobre</button>
+    </div>
+    <div id="analyses-list">
+      <div class="page-head">
+        <div class="page-title">Minha Jornada</div>
+        <button class="btn-new" onclick="showAnalysisNew()" style="font-size:11px;padding:8px 13px">+ Registrar análise</button>
+      </div>
+      <div id="analyses-cards"></div>
+    </div>
+    <div id="analysis-new" style="display:none">
+      <div class="form-wrap">
+        <button class="back-btn" onclick="showAnalysesList()">← voltar</button>
+        <div class="form-title">Registrar Análise</div>
+        <div class="form-date" id="analysis-form-date"></div>
+        <div class="divider"></div>
+        <div class="section">
+          <div class="lbl">Título <span class="opt">· opcional</span></div>
+          <input class="inp" id="an-title" placeholder="Ex: Ciclo 1 — maio 2026...">
+        </div>
+        <div class="section">
+          <div class="lbl">Cole a análise recebida <span class="req">*</span></div>
+          <div class="hint">Cole aqui o texto completo que o Claude te retornou</div>
+          <textarea class="ta" id="an-content" rows="10" placeholder="Cole aqui a análise..."></textarea>
+        </div>
+        <div class="section">
+          <div class="lbl">Momentos incluídos <span class="opt">· opcional</span></div>
+          <div class="hint">Quais momentos do Diário foram usados nesta análise</div>
+          <input class="inp" id="an-moments" placeholder="Ex: Avareza, Aniversário da minha mãe...">
+        </div>
+        <div class="divider"></div>
+        <button class="save-btn" id="analysis-save-btn" onclick="saveAnalysis()">Salvar na Jornada</button>
+      </div>
+    </div>
+    <div id="analysis-detail" style="display:none">
+      <div class="form-wrap">
+        <button class="back-btn" onclick="showAnalysesList()">← jornada</button>
+        <div id="analysis-detail-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div id="page-about" class="page">
+    <div class="inner-nav">
+      <button class="inner-tab" onclick="setTab('home')">Início</button>
+      <button class="inner-tab" onclick="setTab('diary')" id="tab-diary">Diário</button>
+      <button class="inner-tab" onclick="setTab('learn')" id="tab-learn">Repertório</button>
+      <button class="inner-tab" onclick="setTab('baseline')" id="tab-baseline">Estados Mentais</button>
+      <button class="inner-tab active-tab" onclick="setTab('about')" id="tab-about">Sobre</button>
+    </div>
+    <div class="form-wrap">
+      <button class="back-btn" onclick="setTab('home')">← Início</button>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;font-style:italic;color:#2a1408;margin-bottom:6px">O que é o Despertar</div>
+      <div style="height:1px;background:linear-gradient(to right,transparent,rgba(139,90,43,0.22),transparent);margin:14px 0 20px"></div>
+
+      <p style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;line-height:1.8;color:#3a2008;margin-bottom:20px">
+        Um espaço de encontro consigo mesmo. Não um app de autoajuda, não uma ferramenta de produtividade — um companheiro de jornada para quem está trabalhando a transformação de dentro para fora.
+      </p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;line-height:1.8;color:#3a2008;margin-bottom:20px">
+        Aqui você traz o que surge na sua experiência, observa seus padrões sem julgamento, e caminha no ritmo que é seu. Sem sessões marcadas, sem frameworks clínicos, sem agenda terapêutica. Só você, sua intenção e o que escolhe fazer com o que vê.
+      </p>
+
+      <!-- Para quem é -->
+      <div style="background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.18);border-radius:12px;padding:18px 20px;margin-bottom:20px">
+        <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#a07850;margin-bottom:12px">Para quem é</div>
+        <p style="font-size:13px;color:#3a2008;line-height:1.75;margin-bottom:10px">
+          Para quem já passou por uma primeira camada de autoconhecimento e percebeu que informação não é suficiente. Que compreender na mente e se experimentar diferente são coisas distintas.
+        </p>
+        <p style="font-size:13px;color:#3a2008;line-height:1.75;margin-bottom:10px">
+          Para quem transita por territórios onde espiritualidade, neurociência, filosofia e psicologia profunda se encontram — e encontra nessa interseção um caminho mais honesto do que qualquer disciplina isolada oferece. Quem se interessa por temas como consciência, presença, o falso eu, mudança intencional, padrões inconscientes, hermetismo, psicologia analítica, cocriação — e busca não apenas compreendê-los mas vivê-los.
+        </p>
+        <p style="font-size:13px;color:#3a2008;line-height:1.75">
+          Não é para quem quer respostas rápidas ou validação externa. É para quem está disposto a olhar para si com honestidade e a agir com intenção real sobre o que vê.
+        </p>
+      </div>
+
+      <!-- Manifesto -->
+      <div style="background:rgba(200,169,110,0.08);border:1px solid rgba(200,169,110,0.2);border-radius:12px;padding:20px 20px;margin-bottom:24px">
+        <div style="font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#a07850;margin-bottom:8px">Bússola · seu norte</div>
+        <p style="font-size:12px;color:#5a3818;line-height:1.6;margin-bottom:14px;font-style:italic">O default abaixo é um ponto de partida — não um dogma. Conforme sua jornada evolui, você pode reescrever cada intenção na aba Estados Mentais. O acrônimo é só um recurso de memória.</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#c8a96e;line-height:1;width:22px;flex-shrink:0">A</span>
+            <div><div style="font-size:11px;font-weight:400;letter-spacing:0.07em;text-transform:uppercase;color:#2a1408;margin-bottom:2px">Acolhimento sem autopiedade</div><div style="font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#5a3818">Receber-se como é, sem drama e sem negação.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#c8a96e;line-height:1;width:22px;flex-shrink:0">M</span>
+            <div><div style="font-size:11px;font-weight:400;letter-spacing:0.07em;text-transform:uppercase;color:#2a1408;margin-bottom:2px">Maestria emocional</div><div style="font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#5a3818">Quebrar o hábito de ser quem você era.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#c8a96e;line-height:1;width:22px;flex-shrink:0">O</span>
+            <div><div style="font-size:11px;font-weight:400;letter-spacing:0.07em;text-transform:uppercase;color:#2a1408;margin-bottom:2px">Orientação sem julgamento</div><div style="font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#5a3818">Uma bússola interna que aponta sem condenar.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#c8a96e;line-height:1;width:22px;flex-shrink:0">R</span>
+            <div><div style="font-size:11px;font-weight:400;letter-spacing:0.07em;text-transform:uppercase;color:#2a1408;margin-bottom:2px">Renascimento da sua essência</div><div style="font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#5a3818">Não uma melhora do antigo eu — um novo começo.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Como funciona -->
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;font-style:italic;color:#2a1408;margin-bottom:12px">Como funciona</div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
+        <div style="border-left:2px solid rgba(200,169,110,0.4);padding-left:14px">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#a07850;margin-bottom:4px">Diário</div>
+          <div style="font-size:13px;color:#3a2008;line-height:1.6">Registre situações e momentos que chamaram sua atenção. Para cada relato, selecione as armadilhas que estavam presentes, pontue seu estado atual (0 a 10) e descreva o que aconteceu, como se sentiu, como gostaria que fosse e o que fará diferente.</div>
+        </div>
+        <div style="border-left:2px solid rgba(200,169,110,0.4);padding-left:14px">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#a07850;margin-bottom:4px">Aprendizados</div>
+          <div style="font-size:13px;color:#3a2008;line-height:1.6">Registre o que você leu, viu, estudou ou refletiu. Livros, aulas, conversas, insights. Este repertório não é decorativo — ele alimenta a análise como contrapeso ao que você registra sobre si mesmo.</div>
+        </div>
+        <div style="border-left:2px solid rgba(200,169,110,0.4);padding-left:14px">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#a07850;margin-bottom:4px">Estados Mentais</div>
+          <div style="font-size:13px;color:#3a2008;line-height:1.6">Seu gabarito pessoal. Para cada armadilha, registre como você se percebe em geral, quando e como ela aparece, e como gostaria que fosse. Este é seu ponto de partida — atualize quando sentir que mudou.</div>
+        </div>
+        <div style="border-left:2px solid rgba(200,169,110,0.4);padding-left:14px">
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#a07850;margin-bottom:4px">Minha Jornada</div>
+          <div style="font-size:13px;color:#3a2008;line-height:1.6">Periodicamente, gere um prompt com os momentos selecionados e leve ao Claude. Você receberá uma análise que sintetiza padrões emocionais e comportamentais, desafia narrativas com o que você aprendeu, e fecha com um "Experimente isso" preciso.</div>
+        </div>
+      </div>
+
+      <!-- Premissa anti-viés -->
+      <div style="background:rgba(100,80,160,0.05);border:1px solid rgba(100,80,160,0.15);border-radius:12px;padding:18px 20px;margin-bottom:24px">
+        <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#7060a0;margin-bottom:10px">Como a IA te acompanha</div>
+        <p style="font-size:13px;color:#1a0a2a;line-height:1.7;margin-bottom:10px">
+          A IA aqui é opcional — uma companhia quando você quiser, nunca uma obrigação. Quando você a convida, ela age no espírito do manifesto: acolhe sem autopiedade, orienta sem julgar, e aponta sem prescrever.
+        </p>
+        <p style="font-size:13px;color:#1a0a2a;line-height:1.7;margin-bottom:10px">
+          Ela aparece em três momentos — nas sugestões de cada momento, na identificação de armadilhas e nas análises de padrões, que são espelhos do que seus momentos revelam ao longo do tempo, sem rótulos e sem conclusões fechadas sobre quem você é.
+        </p>
+        <p style="font-size:13px;color:#1a0a2a;line-height:1.7">
+          Os Aprendizados que você registra ampliam o campo de visão — trazem o que seus próprios olhos, de dentro, às vezes não alcançam. Mas a base se mantém firme com ou sem eles: o norte é sempre o manifesto.
+        </p>
+      </div>
+
+      <!-- Disclaimer -->
+      <div style="background:rgba(139,90,43,0.04);border:1px solid rgba(139,90,43,0.12);border-radius:12px;padding:18px 20px;margin-bottom:24px">
+        <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#a07850;margin-bottom:10px">Aviso importante</div>
+        <p style="font-size:13px;color:#3a2008;line-height:1.7">
+          O Despertar não é um serviço de saúde mental, terapia ou aconselhamento psicológico. Não substitui acompanhamento profissional. As análises geradas são reflexões baseadas exclusivamente no que você momentou — não diagnósticos, não prognósticos, não prescrições.
+        </p>
+        <p style="font-size:13px;color:#3a2008;line-height:1.7;margin-top:8px">
+          Seus dados ficam armazenados localmente no seu dispositivo e sincronizados automaticamente com o Supabase quando configurado. Você pode exportar um arquivo JSON a qualquer momento como cópia adicional.
+        </p>
+      </div>
+
+      <!-- Para fazer valer -->
+      <div style="background:rgba(139,90,43,0.04);border:1px solid rgba(139,90,43,0.12);border-radius:12px;padding:18px 20px;margin-bottom:24px">
+        <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#a07850;margin-bottom:10px">Para fazer valer</div>
+        <p style="font-size:13px;color:#3a2008;line-height:1.7">
+          O Despertar funciona na medida em que você traz intenção real para cada momento. Não perfeição — disposição. A diferença entre descrever o que aconteceu e realmente olhar para si no que aconteceu.
+        </p>
+        <p style="font-size:13px;color:#3a2008;line-height:1.7;margin-top:8px">
+          É aí que a mudança começa. Não na análise, não na sugestão — no momento em que você decide que vale a pena se ver de verdade.
+        </p>
+      </div>
+
+      <!-- Aprendizados como horizonte -->
+      <div style="background:rgba(80,120,80,0.05);border:1px solid rgba(80,120,80,0.15);border-radius:12px;padding:18px 20px;margin-bottom:24px">
+        <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#5a8a5a;margin-bottom:10px">Sobre os Aprendizados</div>
+        <p style="font-size:13px;color:#3a4a3a;line-height:1.7">
+          O repertório que alimenta sua análise vem dos seus próprios Aprendizados — não de um conjunto fixo de referências. Quanto mais você registrar o que leu, viu, estudou ou refletiu, mais rico e honesto será o horizonte da análise.
+        </p>
+        <p style="font-size:13px;color:#3a4a3a;line-height:1.7;margin-top:8px">
+          Os Aprendizados não calibram a análise — eles ampliam o campo de visão para evitar que ela confirme apenas o que você já pensa de si. O norte da análise é sempre o manifesto AMOR.
+        </p>
+      </div>
+
+      <div style="text-align:center;padding:16px 0;font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:#c8b89a">
+        "Não adianta só compreender na mente.<br>Preciso me experimentar de verdade."
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BASELINE -->
+  <div id="page-baseline" class="page">
+      <div class="inner-nav">
+        <button class="inner-tab" onclick="setTab('home')">Início</button>
+        <button class="inner-tab" onclick="setTab('diary')" id="tab-diary">Diário</button>
+        <button class="inner-tab" onclick="setTab('learn')" id="tab-learn">Repertório</button>
+        <button class="inner-tab" onclick="setTab('baseline')" id="tab-baseline">Estados Mentais</button>
+        <button class="inner-tab" onclick="setTab('analyses')" id="tab-analyses">Jornada</button>
+        <button class="inner-tab" onclick="setTab('about')" id="tab-about">Sobre</button>
+      </div>
+    <div class="form-wrap">
+      <button class="back-btn" onclick="setTab('home')">← Início</button>
+      <div class="form-title">Estados Mentais</div>
+      <div style="font-size:13px;color:#5a3818;line-height:1.6;margin:8px 0 4px">Como me percebo neste padrão de maneira geral em cada uma. Atualize quando sentir que mudou.</div>
+      <div style="font-size:11px;color:#a07850;margin-bottom:4px" id="baseline-updated"></div>
+      <div class="divider"></div>
+      <div id="baseline-blocks"></div>
+      <div class="divider"></div>
+      <button class="save-btn" id="baseline-save-btn" onclick="saveBaseline()">Salvar meu mapa</button>
+    </div>
+  </div>
+
+  <!-- CONFIGURACOES -->
+  <div id="page-config" class="page">
+    <div class="inner-nav">
+      <button class="inner-tab" onclick="setTab('home')">Início</button>
+      <button class="inner-tab" onclick="setTab('diary')" id="tab-diary">Diário</button>
+      <button class="inner-tab" onclick="setTab('learn')" id="tab-learn">Repertório</button>
+      <button class="inner-tab" onclick="setTab('baseline')" id="tab-baseline">Estados Mentais</button>
+      <button class="inner-tab" onclick="setTab('analyses')" id="tab-analyses">Jornada</button>
+      <button class="inner-tab" onclick="setTab('about')" id="tab-about">Sobre</button>
+    </div>
+    <div class="form-wrap">
+      <button class="back-btn" onclick="setTab('home')">← Início</button>
+      <div class="form-title">Configurações</div>
+      
+      <div style="margin-top:16px">
+        <div style="font-size:12px;color:#8b5a2b;font-weight:500;margin-bottom:8px;letter-spacing:0.04em;text-transform:uppercase">Banco de Dados (Supabase)</div>
+        <div style="font-size:13px;color:#5a3818;line-height:1.6;margin-bottom:12px">
+          Para sincronizar seus relatos em múltiplos dispositivos, configure sua chave de acesso do Supabase.
+        </div>
+        
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;color:#6b4a2a;display:block;margin-bottom:4px">Chave Anon do Supabase</label>
+          <input type="password" id="config-supabase-key" placeholder="Cole sua chave de acesso publico" style="width:100%;padding:10px;border:1px solid #d4c9b8;border-radius:4px;font-family:'Lato',sans-serif;font-size:12px;background:white">
+          <div style="font-size:11px;color:#a07850;margin-top:4px">Sua chave nao sera compartilhada. E usada apenas localmente para sincronizar dados.</div>
+        </div>
+        
+        <button onclick="saveSupabaseConfig()" style="background:#5a8b4a;color:white;border:none;padding:10px 16px;border-radius:4px;font-size:12px;cursor:pointer;font-weight:500;width:100%">
+          Salvar Configuracao
+        </button>
+        
+        <div style="margin-top:12px;padding:10px;background:#f0ebe3;border-radius:4px;border-left:3px solid #c8a96e">
+          <div style="font-size:11px;color:#6b4a2a;font-weight:500;margin-bottom:4px">Como obter sua chave:</div>
+          <ol style="font-size:11px;color:#6b4a2a;margin-left:16px">
+            <li>Acesse supabase.com e abra seu projeto</li>
+            <li>Menu Settings > API Settings</li>
+            <li>Procure por "Project API keys" ou "Anon key"</li>
+            <li>Copie a chave publica (nao a chave secreta)</li>
+            <li>Cole aqui acima</li>
+          </ol>
+        </div>
+      </div>
+      
+      <div style="border-top:1px solid #d4c9b8;margin-top:20px;padding-top:16px">
+        <div style="font-size:12px;color:#8b5a2b;font-weight:500;margin-bottom:8px;letter-spacing:0.04em;text-transform:uppercase">Status da Sincronizacao</div>
+        <div id="config-sync-status" style="font-size:12px;color:#5a3818;padding:8px;background:#f5f0e8;border-radius:4px">
+          <span id="sync-indicator">●</span> Aguardando configuracao...
+        </div>
+        <button onclick="testSupabaseConnection()" style="margin-top:12px;background:transparent;color:#5a8b4a;border:1px solid #5a8b4a;padding:8px 12px;border-radius:4px;font-size:12px;cursor:pointer;width:100%">
+          Testar Conexao
+        </button>
+      </div>
+      
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+
+// ════════════════════════════════════════════════════════════════
+// LAYER 1 — CONFIG
+// Fonte verdade de toda configuração do Despertar.
+// Bússola, Padrões e Requisitos alteráveis aqui sem tocar
+// lógica, render ou sync. validateChange() guarda as zonas.
+// ════════════════════════════════════════════════════════════════
+
+const SK_DIARY    = 'despertar-diary-v1';
+const SK_LEARN    = 'despertar-learn-v1';
+const SK_BASELINE = 'despertar-baseline-v1';
+const SK_ANALYSES = 'despertar-analyses-v1';
+
+// ════════════════════════════════════════════════════════════════
+// LAYER 2 — SEEDS
+// Dados de inicialização (diary + learn).
+// Exibidos apenas quando não há dados reais do usuário.
+// Nunca sobrescritos por sync remoto.
+// ════════════════════════════════════════════════════════════════
+
+const SEED = {
+  id:1747515600000, createdAt:"2025-05-17T19:00:00.000Z",
+  title:"Aniversário da minha mãe",
+  selectedItems:[2,6,7], scores:{2:4,6:4,7:4},
+  situation:"Festa de aniversário da minha mãe. Passamos o dia juntos, fizemos churrasco, num ambiente muito bacana. No final da tarde meu tio apareceu com esposa, filha e genro. Estávamos no quintal, cerveja, clima ótimo. Minha prima começou a falar da festa dos 80 anos do meu tio e, no meio da conversa, surgiu uma brincadeira sobre eu estar solteiro — ela sugerindo que eu namorasse uma prima mais distante que estaria no evento. Minha mãe entrou na brincadeira, mas foi escalando: ela fez referência à família dessa prima, disse que não gostava de como tratavam meu avô, que meu tio era omisso. As coisas foram crescendo com fatos do passado, gerando um constrangimento muito grande. A gente tentava levar no tom de brincadeira, mas a situação ficou estranha. Eles se despediram e foram embora.",
+  howFelt:"Fiquei muito constrangido durante o processo. Tentei desviar o assunto, mantendo o clima tranquilo e neutro. Depois que todos foram embora, fechei a cara e falei pra minha mãe que não gostei, que foi desnecessário, que eu desaprovava. Não falei em tom irritado, mas quis mostrar que estava muito descontente. Meu irmão interveio dizendo que era o aniversário dela e ela podia fazer o que quisesse. Eu disse: tudo bem, só estou falando que não gostei. Não fui áspero nem rude, mas quis demonstrar que reprovava totalmente aquilo.",
+  howWished:"Não acho que foi produtivo. Quis demonstrar minhas expectativas sem nenhum compromisso em trazer aprendizado ou reflexão. Poderia ter ido curtir o resto da tarde sem dar concordância nem discordância, e no dia seguinte conversar com minha mãe com mais calma — ouvir, entender, perguntar se não poderia ser de maneira diferente, trazer reflexões de forma mais produtiva. Aquilo não mudaria o passado de qualquer forma.",
+  action:"Trazer a conversa no dia seguinte, com empatia e escuta. Perguntar antes de julgar. Não colocar o outro em situação constrangedora no calor do momento.",
+  suggestion:"Que tal se, ao perceber que uma conversa está escapando do seu controle, você se permitisse soltar o papel de guardião do clima — confiando que os outros também são responsáveis pelo que criam — e reservasse sua energia para uma conversa genuína com sua mãe no dia seguinte, curiosa e sem cobrança?"
+};
+
+const SEED2 = {
+  id: 1747700000000,
+  createdAt: "2026-05-20T10:00:00.000Z",
+  title: "Avareza",
+  selectedItems: [4, 6, 1, 8],
+  scores: {4: 2, 6: 3, 1: 4, 8: 5},
+  situation: "Acontece muitas vezes, sempre que envolve despesas ou perdas, eu costumo querer otimizar as coisas — e são coisas que realmente não fazem diferença. Não flui naturalmente, parece uma compulsão por otimizar o recurso ao máximo. Com isso às vezes não desfruto de coisas legais com meus filhos nas pequenas coisas. Às vezes levo tempo demais pra decidir por questões de poucos reais. Por outro lado, por decisões emocionais querendo otimizar, tomo decisões precipitadas, perdendo às vezes muito dinheiro em investimentos. É um processo muito reativo. Toda vez que filho, irmão ou mãe ligam, fico pensando se vão pedir dinheiro emprestado. Parece que estou sempre querendo me proteger pra guardar. Toda vez que me pedem emprestado fico com ansiedade grande pensando se vão pagar. Fico remoendo essas histórias. Existe um excesso de controle desnecessário — sobra controle onde não precisa, falta onde precisa.",
+  howFelt: "Sentimento péssimo — mistura de ansiedade, medo, reatividade emocional e preocupação desnecessária, e depois sentimento de culpa por estar sendo avarento ou mesquinho. Já fui muito pior. Quando olho pra trás esse sentimento me remete a coisas do passado — eu era realmente insuportável com isso. Hoje está menos intenso, mas preciso me aprofundar bastante. Esse medo de perder me limita a não explorar oportunidades. Sentimento muito ruim. Percebo e gostaria muito de poder fazer diferente.",
+  howWished: "Gostaria que fosse mais natural, mais consciente, com menos sentimento de escassez. Sem problema em ter rigor de controle, mas um controle consciente. Queria que as coisas fossem com mais inteligência emocional, menos medo, menos invenção de hipóteses de escassez. Resumindo: nesses momentos fico 100% emocional. Preciso trazer consciência e tranquilidade para não ficar inventando cenários catastróficos como se o tempo inteiro pudesse perder o que juntei.",
+  action: "Me preparar antecipadamente. Dar um passo atrás, olhar pra mim de longe, e ver que emoção está aparecendo quando lido com dinheiro. É risco real ou estou fantasiando? Estou extrapolando? Depois da decisão tomada, fechar o assunto — não ficar remoendo. Deixa seguir. Confiar.",
+  suggestion: "Que tal se o controle que você tanto busca já estivesse disponível dentro de você — não sobre os recursos externos, mas sobre a escolha de como responder quando o medo de perder aparece?"
+};
+
+// ════════════════════════════════════════════════════════════════
+
+const DESPERTAR_CONFIG = {
+  versao: { id: 'v4.9++', score_base: 83, data: '2026-05-21', historico: [] },
+  bussola: {
+    acronimo: 'AMOR',
+    vetores: [
+      { letra: 'A', titulo: 'Acolhimento sem autopiedade', desc: 'Receber-se como é.' },
+      { letra: 'M', titulo: 'Maestria do observador', desc: 'Quebrar o hábito de ser quem você era.' },
+      { letra: 'O', titulo: 'Olhar sem julgamento', desc: 'Ver o que é, sem categoria moral.' },
+      { letra: 'R', titulo: 'Renascimento da essência', desc: 'Permitir que o novo emerge.' }
+    ],
+    calibracao: { min: 5, max: 40 }
+  },
+  padroes: [
+    {id:1,label:"Culpa e arrependimento"},
+    {id:2,label:"Necessidade de aprovação e reconhecimento"},
+    {id:3,label:"Vergonha e indignidade"},
+    {id:4,label:"Medo e ansiedade"},
+    {id:5,label:"Inveja e ressentimento"},
+    {id:6,label:"Reatividade emocional e impulsividade"},
+    {id:7,label:"Resistência, negação e arrogância"},
+    {id:8,label:"Preocupação e bloqueios materiais"},
+    {id:9,label:"Bloqueios relacionais e carência"},
+    {id:10,label:"Vitimização e queixa"}
+  ],
+  requisitos: [
+    { id: 1, nome: 'Espelho honesto', zona: 'AMARELA', afeta_se: ['bussola','prompt_analise'] },
+    { id: 2, nome: 'Sem prescrição', zona: 'AMARELA', afeta_se: ['prompt_reflexao'] },
+    { id: 3, nome: 'Sem identidade cristalizada', zona: 'AMARELA', afeta_se: ['prompt_analise','padroes'] },
+    { id: 4, nome: 'Bássola não forçada', zona: 'AMARELA', afeta_se: ['bussola','calibracao'] },
+    { id: 5, nome: 'Sem deriva de progresso', zona: 'VERMELHA', afeta_se: ['prompt_inteiro'] },
+    { id: 6, nome: 'Coexistência sem peso', zona: 'AMARELA', afeta_se: ['prompt_analise','padroes'] },
+    { id: 7, nome: 'Identidade pré-formada', zona: 'AMARELA', afeta_se: ['prompt_analise'] },
+    { id: 8, nome: 'Material abstrato honrado', zona: 'AMARELA', afeta_se: ['prompt_analise'] },
+    { id: 9, nome: 'Múltiplos padrões como interação', zona: 'AMARELA', afeta_se: ['prompt_analise'] },
+    { id: 10, nome: 'Calibração implícita', zona: 'VERMELHA', afeta_se: ['bussola','calibracao'] },
+    { id: 11, nome: 'Peso zero diferencial', zona: 'VERMELHA', afeta_se: ['prompt_analise','padroes'] }
+  ]
+};
+const ARMADILHAS = DESPERTAR_CONFIG.padroes;
+
+function getBussolaText() { return DESPERTAR_CONFIG.bussola.vetores.map(function(v){return v.letra+'='+v.titulo;}).join(' / '); }
+function getBussolaAcronym() { return DESPERTAR_CONFIG.bussola.acronimo; }
+function getPadroesCount() { return DESPERTAR_CONFIG.padroes.length; }
+function getPadroesLabel() { var c=getPadroesCount(); return c===1?'1 padrão':c+' padrões'; }
+function validateChange(campo) { var a=[]; DESPERTAR_CONFIG.requisitos.forEach(function(r){if(r.afeta_se.indexOf(campo)>=0)a.push(r);}); var z='VERDE'; a.forEach(function(r){if(r.zona==='VERMELHA')z='VERMELHA'; else if(r.zona==='AMARELA'&&z!=='VERMELHA')z='AMARELA';}); return{zona:z,requisitos:a,campo:campo}; }
+
+
+const LSEED1 = {
+  id: 1747000001000,
+  createdAt: "2026-05-01T10:00:00.000Z",
+  title: "Quebrando o hábito de ser você mesmo",
+  content: "A identificação com um falso eu reativo é irreal, não conectado com sua essência, levando a decisões automáticas e limitadas. O livro traz de maneira estruturada como transcender do falso eu para o seu eu maior de possibilidades infinitas.",
+  tags: ["autoconhecimento", "padrões", "neurociência"],
+  source: "Joe Dispenza"
+};
+
+const LSEED2 = {
+  id: 1747000002000,
+  createdAt: "2026-05-01T10:01:00.000Z",
+  title: "Presença e desidentificação",
+  content: "A distinção entre quem observa e o papel que foi aprendido. O sofrimento nasce da identificação com um personagem construído pela experiência — não da essência. Estar presente é reconhecer essa diferença em tempo real.",
+  tags: ["presença", "consciência", "essência"],
+  source: "Sadhguru"
+};
+
+const LSEED3 = {
+  id: 1747000003000,
+  createdAt: "2026-05-01T10:02:00.000Z",
+  title: "Nascer de novo",
+  content: "O que foi aprendido não define o próximo momento. A transformação não é uma melhora do antigo eu — é um novo começo que exige reconhecer que o antigo era um papel, não uma essência. Cada escolha consciente é um ato de renascimento.",
+  tags: ["renascimento", "transformação", "essência"],
+  source: ""
+};
+
+// ════════════════════════════════════════════════════════════════
+// LAYER 3 — STATE
+// Variáveis de runtime. Populadas por STORAGE no boot.
+// Lidas por RENDER. Escritas por LOGIC.
+// ════════════════════════════════════════════════════════════════
+let diary = [], learn = [], baseline = {scores:{},notes:{},updatedAt:null}, analyses = [];
+let editDiaryId = null, selLearnId = null, selDiaryId = null;
+let dSelectedItems = [], dScores = {}, lTags = [], activeLearnTag = null;
+
+// ════════════════════════════════════════════════════════════════
+// LAYER 4 — HELPERS
+// Funções puras utilitárias. Sem efeitos colaterais.
+// Sem acesso a DOM. Sem acesso a STATE diretamente.
+// ════════════════════════════════════════════════════════════════
+const fmtDate = iso => new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+const fmtShort = iso => new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+const scoreColor = v => v<=3?'#c8693a':v<=6?'#c8a93a':'#5a8b4a';
+const scoreLabel = v => v<=2?'muito presente':v<=4?'presente':v<=6?'moderado':v<=8?'leve':'quase livre';
+const $ = id => document.getElementById(id);
+const avg = (items, scores) => { if(!items.length)return null; const vals=items.map(id=>scores[id]|| 5); return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1); };
+
+// ════════════════════════════════════════════════════════════════
+// LAYER 5 — STORAGE
+// Lê e escreve localStorage. Gerencia SEEDs como fallback.
+// Não conhece Supabase (sync é responsabilidade de DB).
+// ════════════════════════════════════════════════════════════════
+function load() {
+  // JSON é fonte verdade. localStorage é cache de sessão.
+  var stored = null;
+  try { var d = localStorage.getItem(SK_DIARY); if(d) stored = JSON.parse(d); } catch(e) {}
+
+  // Se localStorage tem dados do usuário (além dos SEEDs), usa como fonte
+  var userRelatos = stored ? stored.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; }) : [];
+
+  if(userRelatos.length > 0) {
+    // Usuário tem relatos reais → localStorage é fonte
+    diary = stored;
+  } else {
+    // Sem relatos reais → inicializa com SEEDs
+    diary = [];
+    if(!diary.find(function(e){ return e.id === SEED.id; })) diary = [SEED, ...diary];
+    if(!diary.find(function(e){ return e.id === SEED2.id; })) diary = [SEED2, ...diary];
+  }
+
+  try { var l = localStorage.getItem(SK_LEARN); learn = l ? JSON.parse(l) : []; } catch(e) { learn = []; }
+  if(!learn.find(function(e){ return e.id === LSEED1.id; })) learn = [LSEED1, ...learn];
+  if(!learn.find(function(e){ return e.id === LSEED2.id; })) learn = [LSEED2, ...learn];
+  if(!learn.find(function(e){ return e.id === LSEED3.id; })) learn = [LSEED3, ...learn];
+
+  try { var b = localStorage.getItem(SK_BASELINE); if(b) baseline = JSON.parse(b); } catch(e) {}
+  try { var a = localStorage.getItem(SK_ANALYSES); analyses = a ? JSON.parse(a) : []; } catch(e) { analyses = []; }
+
+  if(!baseline.scores || !Object.keys(baseline.scores).length) {
+    baseline.scores = Object.fromEntries(ARMADILHAS.map(function(a){ return [a.id, 5]; }));
+    baseline.notes = {};
+  }
+}
+function save(which) {
+  if(which==='diary'||which==='all') localStorage.setItem(SK_DIARY,JSON.stringify(diary));
+  if(which==='learn'||which==='all') localStorage.setItem(SK_LEARN,JSON.stringify(learn));
+  if(which==='baseline'||which==='all') localStorage.setItem(SK_BASELINE,JSON.stringify(baseline));
+  if(which==='analyses'||which==='all') localStorage.setItem(SK_ANALYSES,JSON.stringify(analyses));
+  // Marca timestamp da última gravação
+  localStorage.setItem('despertar-last-save', new Date().toISOString());
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULO: STATUS DE SINCRONIZACAO
+// Responsabilidade: indicar visualmente o estado de sync remoto
+// e detectar mudancas de conectividade.
+// Independente de UI principal e logica de analise.
+// ═══════════════════════════════════════════════════════════════
+
+function setBackupStatus(msg, color) {
+  const el = document.getElementById('backup-status');
+  if(el) { el.textContent = msg; el.style.color = color || '#a07850'; }
+}
+
+function setSyncStatus(connected) {
+  setBackupStatus(
+    connected ? '☁ Sincronizado com Supabase' : '○ Sem sincronizacao remota',
+    connected ? '#4a7a4a' : '#a07850'
+  );
+}
+
+function checkOnline() {
+  const notice = document.getElementById('offline-notice');
+  if(!notice) return;
+  if(!navigator.onLine) {
+    notice.style.display = 'block';
+    setBackupStatus('⚠ Offline — dados salvos localmente', '#c8693a');
+  } else {
+    notice.style.display = 'none';
+    setSyncStatus(DB.ready);
+  }
+}
+window.addEventListener('online',  checkOnline);
+window.addEventListener('offline', checkOnline);
+
+// ─── Força sync manual ────────────────────────────────────────
+function forceSyncNow() {
+  var el = document.getElementById('force-sync-status');
+  // Diagnóstico
+  var supabaseLoaded = typeof window.supabase !== 'undefined';
+  if (!supabaseLoaded) {
+    if (el) el.textContent = 'Erro: biblioteca não carregou (sem internet ou bloqueio). Verifique conexão e recarregue.';
+    return;
+  }
+  // Tenta inicializar DB se ainda não estiver pronto
+  if (!DB.ready) {
+    if (el) el.textContent = 'Inicializando...';
+    var ok = DB.init();
+    if (!ok) {
+      if (el) el.textContent = 'Erro ao inicializar cliente Supabase.';
+      return;
+    }
+  }
+  if (el) el.textContent = 'Sincronizando ' + diary.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; }).length + ' relato(s)...';
+  var userDiary = diary.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; });
+  if (!userDiary.length) {
+    if (el) el.textContent = 'Nenhum relato para sincronizar.';
+    return;
+  }
+  var self = DB;
+  var rows = userDiary.map(function(e){ return self.entryToRow(e); });
+  DB.client.from('diary').upsert(rows, { onConflict: 'id' }).then(function(result) {
+    if (result.error) {
+      if (el) el.textContent = 'Erro Supabase: ' + result.error.message;
+    } else {
+      if (el) el.textContent = '✓ ' + userDiary.length + ' relato(s) sincronizado(s).';
+      setBackupStatus('☁ Sincronizado com Supabase', '#4a7a4a');
+      DB.ready = true;
+    }
+  }).catch(function(e) {
+    if (el) el.textContent = 'Erro rede: ' + e.message;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FIM DO MODULO: STATUS DE SINCRONIZACAO
+// ═══════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════
+// LAYER 6 — RENDER / LOGIC
+// Funções de UI organizadas por domínio.
+// Cada domínio: show* (navegação), render* (DOM), save*/delete* (escrita).
+// ════════════════════════════════════════════════════════════════
+
+// ─── Navigation ───────────────────────────────────────────────
+function setTab(tab) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.inner-tab').forEach(t=>t.classList.remove('active-tab'));
+  const page = $('page-'+tab); if(page) page.classList.add('active');
+  const tabEl = $('tab-'+tab); if(tabEl) tabEl.classList.add('active');
+  // Highlight inner-tab on active page
+  document.querySelectorAll('.inner-tab').forEach(t=>{
+    if(t.getAttribute('onclick') && t.getAttribute('onclick').includes("'"+tab+"'")) t.classList.add('active-tab');
+  });
+  if(tab==='diary') showDiaryList();
+  if(tab==='learn') showLearnList();
+  if(tab==='analyses') showAnalysesList();
+  if(tab==='baseline') renderBaseline();
+}
+function goHome() { setTab('home'); }
+
+// ─── Diary ────────────────────────────────────────────────────
+function showDiaryList() {
+  $('diary-list').style.display=''; $('diary-new').style.display='none'; $('diary-detail').style.display='none';
+  renderDiaryList();
+}
+function showDiaryNew(entry=null) {
+  $('diary-list').style.display='none'; $('diary-new').style.display=''; $('diary-detail').style.display='none';
+  editDiaryId = entry ? entry.id : null;
+  $('diary-form-title').textContent = entry ? 'Editar Momento' : 'Novo Momento';
+  $('diary-form-date').textContent = entry
+    ? fmtDate(entry.createdAt)
+    : new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+  $('d-title').value = (entry && entry.title)||'';
+  $('d-situation').value = (entry && entry.situation)||'';
+  $('d-howfelt').value = (entry && entry.howFelt)||'';
+  $('d-howfelt').value = (entry && entry.howFelt)||'';
+  $('d-action').value = (entry && entry.action)||'';
+  $('d-suggestion').value = (entry && entry.suggestion)||'';
+  $('d-suggestion').style.borderStyle = (entry && entry.suggestion) ? 'solid' : 'dashed';
+  dSelectedItems = entry ? [...(entry.selectedItems||[])] : [];
+  dScores = entry ? {...(entry.scores||{})} : {};
+  renderChips(); renderSliders(); updateSugBtn();
+  $('diary-save-btn').textContent = entry ? 'Salvar' : 'Trazer este momento';
+}
+function showDiaryDetail(id) {
+  selDiaryId = id;
+  $('diary-list').style.display='none'; $('diary-new').style.display='none'; $('diary-detail').style.display='';
+  const e = diary.find(x=>x.id===id); if(!e)return;
+  const av = avg(e.selectedItems||[], e.scores||{});
+  const color = av ? scoreColor(Number(av)) : '';
+  let html = '';
+  if(e.title) html+=`<div class="detail-title">${esc(e.title)}</div>`;
+  html+=`<div class="form-date">${fmtDate(e.createdAt)}</div><div class="divider"></div>`;
+  html+=`<div style="margin-bottom:14px">`;
+  (e.selectedItems||[]).forEach(id=>{
+    const sc=(e.scores && e.scores[id]); const a=ARMADILHAS.find(x=>x.id===id);
+    html+=`<span class="tag-lg">${id}. ${esc((a && a.label)||'')}${sc!==undefined?`<span style="margin-left:6px;color:${scoreColor(sc)};font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:300">${sc}</span>`:''}</span>`;
+  });
+  html+=`</div>`;
+  if(av) html+=`<div class="avg-badge" style="justify-content:flex-start;margin-bottom:18px"><span class="avg-label">média geral</span><span class="avg-val" style="color:${color}">${av}</span><span class="avg-lbl" style="color:${color}">${scoreLabel(Number(av))}</span></div>`;
+  [['O que surgiu?',e.situation],['Como me percebi?',e.howFelt],['O que escolho?',e.action]].forEach(([lbl,val])=>{
+    if(val) html+=`<div class="d-block"><div class="d-lbl">${lbl}</div><div class="d-txt">${esc(val)}</div></div>`;
+  });
+  if(e.suggestion) html+=`<div class="sug-box" style="margin-top:4px"><div class="sug-star">✦</div><div class="d-lbl" style="margin-bottom:6px">Que tal se…</div><div class="sug-text">${esc(e.suggestion)}</div></div>`;
+  html+=`<div class="divider"></div>`;
+  html+=`<button class="save-btn" style="margin-bottom:10px" onclick="showDiaryNew(diary.find(x=>x.id==${id}))">Editar este momento</button>`;
+  html+=`<button class="delete-btn" onclick="deleteDiary(${id})">Apagar momento</button>`;
+  $('detail-content').innerHTML = html;
+}
+
+function renderChips() {
+  const el=$('d-chips'); el.innerHTML='';
+  ARMADILHAS.forEach(a=>{
+    const on=dSelectedItems.includes(a.id);
+    const div=document.createElement('div');
+    div.className='chip'+(on?' on':'');
+    div.innerHTML=`<span class="chip-n">${a.id}</span>${esc(a.label)}`;
+    div.onclick=()=>toggleChip(a.id);
+    el.appendChild(div);
+  });
+}
+function toggleChip(id) {
+  const i=dSelectedItems.indexOf(id);
+  if(i>=0){dSelectedItems.splice(i,1);}
+  else{dSelectedItems.push(id); if(dScores[id]===undefined)dScores[id]=5;}
+  renderChips(); renderSliders(); updateSugBtn();
+}
+function renderSliders() {
+  const sec=$('d-scores-section');
+  sec.style.display=dSelectedItems.length?'':'none';
+  const el=$('d-sliders'); el.innerHTML='';
+  dSelectedItems.forEach(id=>{
+    const a=ARMADILHAS.find(x=>x.id===id);
+    const val=dScores[id]|| 5; const color=scoreColor(val);
+    const div=document.createElement('div'); div.className='score-block';
+    div.innerHTML=`
+      <div class="score-top">
+        <span class="score-label">${esc(a.label)}</span>
+        <div class="score-right">
+          <span class="score-val" id="sv-${id}" style="color:${color}">${val}</span>
+          <span class="score-lbl" id="sl-${id}" style="color:${color}">${scoreLabel(val)}</span>
+        </div>
+      </div>
+      <input type="range" min="0" max="10" value="${val}" style="accentColor:${color}" oninput="updateScore(${id},this.value)" id="sr-${id}">
+      <div class="score-ticks">${[0,2,4,6,8,10].map(n=>`<span class="score-tick">${n}</span>`).join('')}</div>`;
+    el.appendChild(div);
+  });
+  renderAvg();
+}
+function updateScore(id,val) {
+  val=Number(val); dScores[id]=val;
+  const c=scoreColor(val);
+  $('sv-'+id).textContent=val; $('sv-'+id).style.color=c;
+  $('sl-'+id).textContent=scoreLabel(val); $('sl-'+id).style.color=c;
+  $('sr-'+id).style.accentColor=c;
+  renderAvg();
+}
+function renderAvg() {
+  const el=$('d-avg-badge'); el.innerHTML='';
+  if(!dSelectedItems.length)return;
+  const av=avg(dSelectedItems,dScores); const c=scoreColor(Number(av));
+  el.innerHTML=`<span class="avg-label">média geral</span><span class="avg-val" style="color:${c}">${av}</span><span class="avg-lbl" style="color:${c}">${scoreLabel(Number(av))}</span>`;
+}
+function updateSugBtn() {
+  const btn=$('sug-btn');
+  const hasSit=$('d-situation').value.trim().length>0;
+  btn.disabled=!hasSit;
+}
+
+// ════════════════════════════════════════════════════════════════
+// LAYER 7 — PROMPT
+// Constrói o prompt de análise a partir de CONFIG + STATE.
+// Isolado: não acessa DOM além de campos do formulário ativo.
+// Para evoluir o prompt, edite apenas este bloco.
+// ════════════════════════════════════════════════════════════════
+
+function buildPrompt() {
+  var arms = (dSelectedItems||[]).map(function(id){
+    var a = ARMADILHAS.find(function(x){ return x.id===id; });
+    var sc = dScores[id]||5;
+    return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10 \u2014 ' + scoreLabel(sc) + ')';
+  }).join('\n');
+  return '[DESPERTAR \u2014 An\u00e1lise v4.9++]\n\n' +
+    'Padr\u00f5es presentes:\n' + (arms||'\u2014') + '\n\n' +
+    'O que surgiu:\n' + ($('d-situation').value||'\u2014') + '\n\n' +
+    'Como me percebi:\n' + ($('d-howfelt').value||'\u2014') + '\n\n' +
+    'O que escolho:\n' + ($('d-action').value||'\u2014') + '\n\n' +
+    '---\n\n' +
+    'SEU PAPEL: Voc\u00ea \u00e9 um espelho \u2014 n\u00e3o conselheiro, terapeuta ou coach. Reflita o que os registros revelam sem diagnosticar, prescrever ou enquadrar em categorias.\n\n' +
+    'B\u00daSSOLA (norte): A=Acolhimento sem autopiedade / M=Maestria do observador / O=Olhar sem julgamento / R=Renascimento da ess\u00eancia\n\n' +
+    'INSTRU\u00c7\u00d5ES:\n' +
+    '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece", "costuma", "h\u00e1 indica\u00e7\u00e3o". Recorr\u00eancia \u2260 identidade. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos.\n\n' +
+    '2. REFLEX\u00c3O: 3-4 frases. Primeiro: ancora no relato (2 frases que nomeiam a tens\u00e3o real observada, sem explicar causa). Depois: pergunta aberta nascida dessa tens\u00e3o, colorida pela B\u00fassola. SE h\u00e1 transforma\u00e7\u00e3o j\u00e1 ocorrida: nomeie o que coexiste antes de perguntar. SE h\u00e1 padr\u00e3o ativo: nomeie o movimento antes de convidar. Tom: Maestria do observador e Olhar sem julgamento como norte. Nunca: tarefa, m\u00e9todo, asseguramento, prescri\u00e7\u00e3o.\n\n' +
+    'PROTE\u00c7\u00d5ES: Padr\u00e3o \u2260 identidade. N\u00e3o celebre progresso. Deixe espa\u00e7o para o usu\u00e1rio reconhecer a origem. B\u00fassola orienta tom, n\u00e3o substitui o que emerge.';
+}
+function copyPrompt() {
+  const prompt=buildPrompt();
+  $('prompt-ta').value=prompt;
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(prompt).then(()=>showCopied()).catch(()=>fallbackCopy());
+  } else { fallbackCopy(); }
+}
+function fallbackCopy() {
+  $('prompt-ta').style.position='fixed'; $('prompt-ta').style.left='0'; $('prompt-ta').style.top='0';
+  $('prompt-ta').style.width='100px'; $('prompt-ta').style.height='50px';
+  $('prompt-ta').select(); document.execCommand('copy');
+  $('prompt-ta').style.position='absolute'; $('prompt-ta').style.left='-9999px';
+  $('prompt-ta').style.width='1px'; $('prompt-ta').style.height='1px';
+  showCopied();
+}
+function showCopied() {
+  const btn=$('sug-btn');
+  btn.classList.add('copied');
+  btn.textContent='✓  Prompt copiado! Cole no chat →';
+  setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML='✦ &nbsp;Quer uma reflexão da IA?';},2500);
+}
+
+$('d-situation').addEventListener('input',updateSugBtn);
+$('d-suggestion').addEventListener('input',function(){
+  this.style.borderStyle=this.value?'solid':'dashed';
+});
+
+function saveDiary() {
+  if(!dSelectedItems.length||!$('d-situation').value.trim()){alert('Selecione ao menos uma armadilha e descreva o que aconteceu.');return;}
+  const entry={
+    id: editDiaryId||Date.now(),
+    createdAt: editDiaryId ? ((function(){var f=diary.find(e=>e.id===editDiaryId);return f&&f.createdAt;})()||new Date().toISOString()) : new Date().toISOString(),
+    title:$('d-title').value.trim(),
+    selectedItems:[...dSelectedItems],
+    scores:{...dScores},
+    situation:$('d-situation').value.trim(),
+    howFelt:$('d-howfelt').value.trim(),  // now includes both percebi + escolho
+    howWished:$('d-action').value.trim(),  // now part of action
+    action:$('d-action').value.trim(),
+    suggestion:$('d-suggestion').value.trim(),
+  };
+  if(editDiaryId) { const i=diary.findIndex(e=>e.id===editDiaryId); if(i>=0)diary[i]=entry; else diary.unshift(entry); }
+  else { diary.unshift(entry); }
+  save('diary'); 
+  
+  // Sincroniza com Supabase se disponivel
+  if (DB.ready) DB.saveEntry(entry);
+  
+  renderAll();
+  const btn=$('diary-save-btn'); btn.textContent='✓ Salvo'; btn.classList.add('ok');
+  setTimeout(()=>showDiaryList(),1000);
+}
+
+function deleteDiary(id) {
+  if(!confirm('Apagar este momento?'))return;
+  diary=diary.filter(e=>e.id!==id); save('diary'); renderAll(); showDiaryList();
+}
+
+function clearDiarySearch() {
+  const kw=$('diary-keyword'); if(kw) kw.value='';
+  const df=$('diary-date-from'); if(df) df.value='';
+  const dt=$('diary-date-to'); if(dt) dt.value='';
+  renderDiaryList();
+}
+
+function renderDiaryList() {
+  const el=$('diary-cards');
+  if(!diary.length){el.innerHTML='<div class="empty">Nenhum momento ainda.</div>';return;}
+  const keyword = (($('diary-keyword')?$('diary-keyword').value:'')||'').toLowerCase().trim();
+  const dateFrom = ($('diary-date-from')?$('diary-date-from').value:'')||'';
+  const dateTo = ($('diary-date-to')?$('diary-date-to').value:'')||'';
+
+  const filtered = diary.filter(e=>{
+    const matchKw = !keyword || (
+      (e.title||'').toLowerCase().includes(keyword) ||
+      (e.situation||'').toLowerCase().includes(keyword) ||
+      (e.howFelt||'').toLowerCase().includes(keyword) ||
+      (e.howWished||'').toLowerCase().includes(keyword) ||
+      (e.action||'').toLowerCase().includes(keyword) ||
+      (e.selectedItems||[]).some(id=>((function(){var a=ARMADILHAS.find(a=>a.id===id);return (a&&a.label)||'';})()).toLowerCase().includes(keyword))
+    );
+    const eDate = e.createdAt.slice(0,10);
+    const matchFrom = !dateFrom || eDate >= dateFrom;
+    const matchTo = !dateTo || eDate <= dateTo;
+    return matchKw && matchFrom && matchTo;
+  });
+
+  if(!filtered.length){
+    el.innerHTML='<div class="empty" style="padding:30px 0;font-size:16px">Nenhum resultado encontrado.</div>';
+    return;
+  }
+  el.innerHTML=filtered.map(e=>{
+    const av=avg(e.selectedItems||[],e.scores||{}); const c=av?scoreColor(Number(av)):'';
+    const tags=(e.selectedItems||[]).map(id=>`<span class="small-tag">${(function(){var a=ARMADILHAS.find(function(x){return x.id===id;});return a?a.label:'';})()}</span>`).join('');
+    return `<div class="d-card" onclick="showDiaryDetail(${e.id})">
+      <div class="d-card-top"><span class="d-card-date">${fmtDate(e.createdAt)}</span>
+        <div class="d-card-right">${av?`<span style="font-size:17px;font-family:'Cormorant Garamond',serif;color:${c};font-weight:300">${av}</span>`:''}<span style="color:#c8a96e">→</span></div>
+      </div>
+      ${e.title?`<div class="d-card-title">${esc(e.title)}</div>`:''}
+      <div class="tag-row">${tags}</div>
+      <div class="preview">${esc(e.situation)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Learn ────────────────────────────────────────────────────
+function showLearnList() {
+  $('learn-list').style.display=''; $('learn-new').style.display='none'; $('learn-detail').style.display='none';
+  renderLearnList();
+}
+function showLearnNew() {
+  $('learn-list').style.display='none'; $('learn-new').style.display=''; $('learn-detail').style.display='none';
+  $('learn-form-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+  $('l-title').value=''; $('l-content').value=''; $('l-source').value=''; $('l-tag-input').value='';
+  lTags=[]; renderLTags();
+}
+function showLearnDetail(id) {
+  selLearnId=id;
+  $('learn-list').style.display='none'; $('learn-new').style.display='none'; $('learn-detail').style.display='';
+  const e=learn.find(x=>x.id===id); if(!e)return;
+  let html=`<div class="form-title green">${esc(e.title)}</div><div class="form-date">${fmtShort(e.createdAt)}</div><div class="divider"></div>`;
+  if(e.content) html+=`<div class="d-block"><div class="d-lbl">Anotação</div><div class="d-txt">${esc(e.content)}</div></div>`;
+  if(e.tags && e.tags.length) html+=`<div class="d-block"><div class="d-lbl">Tags</div><div style="margin-top:4px">${e.tags.map(t=>`<span class="l-tag" style="cursor:pointer" onclick="filterByTag('${esc(t)}')">${esc(t)}</span>`).join('')}</div></div>`;
+  if(e.source) {
+    const isUrl=e.source.startsWith('http');
+    html+=`<div class="d-block"><div class="d-lbl">Fonte</div><div style="font-size:13px;color:#5a7a5a;word-break:break-all">${isUrl?`<a href="${esc(e.source)}" target="_blank" style="color:#3a6a3a">${esc(e.source)}</a>`:esc(e.source)}</div></div>`;
+  }
+  html+=`<button class="delete-btn" style="border-color:rgba(60,120,60,0.2);color:#3a7a3a" onclick="deleteLearn(${id})">Apagar entrada</button>`;
+  $('learn-detail-content').innerHTML=html;
+}
+function filterByTag(tag) { activeLearnTag=tag; showLearnList(); }
+
+function renderLTags() {
+  const el=$('l-tags-display'); el.innerHTML='';
+  lTags.forEach(t=>{
+    const span=document.createElement('span'); span.className='tag-existing';
+    span.innerHTML=`${esc(t)}<span class="tag-x" onclick="removeLTag('${esc(t)}')">×</span>`;
+    el.appendChild(span);
+  });
+}
+function removeLTag(t){lTags=lTags.filter(x=>x!==t);renderLTags();}
+function handleTagKey(e){if(e.key==='Enter'&&e.target.value.trim()){addLTag(e.target.value.trim());e.preventDefault();}}
+function addLTag(t){t=t.toLowerCase().trim();if(t&&!lTags.includes(t)){lTags.push(t);renderLTags();}$('l-tag-input').value='';$('tag-suggestions').style.display='none';}
+function showTagSuggestions(){
+  const val=$('l-tag-input').value.toLowerCase().trim();
+  if(!val){$('tag-suggestions').style.display='none';return;}
+  const allTags=[...new Set(learn.flatMap(e=>e.tags||[]))].filter(t=>t.includes(val)&&!lTags.includes(t));
+  if(!allTags.length){$('tag-suggestions').style.display='none';return;}
+  $('tag-suggestions').innerHTML=allTags.slice(0,6).map(t=>`<div class="tag-suggestion" onclick="addLTag('${esc(t)}')">${esc(t)}</div>`).join('');
+  $('tag-suggestions').style.display='';
+}
+
+function saveLearn(){
+  if(!$('l-title').value.trim()){alert('Adicione um título.');return;}
+  const entry={id:Date.now(),createdAt:new Date().toISOString(),title:$('l-title').value.trim(),content:$('l-content').value.trim(),tags:[...lTags],source:$('l-source').value.trim()};
+  learn.unshift(entry); save('learn'); renderAll(); showLearnList();
+}
+function deleteLearn(id){if(!confirm('Apagar?'))return;learn=learn.filter(e=>e.id!==id);save('learn');renderAll();showLearnList();}
+
+function renderLearnList(){
+  const search=$('learn-search').value.toLowerCase();
+  const allTags=[...new Set(learn.flatMap(e=>e.tags||[]))].sort();
+  // Tag bar
+  const tb=$('learn-tag-bar');
+  if(allTags.length){
+    tb.innerHTML=`<span class="tag-bar-lbl">Tags:</span>`+allTags.map(t=>`<span class="tag-pill${activeLearnTag===t?' on':''}" onclick="toggleLearnTag('${esc(t)}')">${esc(t)}</span>`).join('')+(activeLearnTag||search?`<span class="clear-filter" onclick="clearLearnFilter()">× limpar</span>`:'');
+  } else { tb.innerHTML=''; }
+  // Filter
+  let filtered=learn.filter(e=>{
+    const matchTag=activeLearnTag?(e.tags||[]).includes(activeLearnTag):true;
+    const matchSearch=search?(e.title.toLowerCase().includes(search)||(e.content||'').toLowerCase().includes(search)):true;
+    return matchTag&&matchSearch;
+  });
+  const el=$('learn-cards');
+  if(!learn.length){el.innerHTML='<div class="empty">Repertório vazio.<br><span style="font-size:13px;opacity:0.6">Comece registrando algo que aprendeu.</span></div>';return;}
+  if(activeLearnTag||search){
+    el.innerHTML=`<div style="font-size:11px;color:#5a8a5a;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">${filtered.length} resultado${filtered.length!==1?'s':''}</div>`+filtered.map(e=>learnCard(e)).join('');
+    return;
+  }
+  // Grouped by tag
+  const map={};
+  learn.forEach(e=>{
+    if(e.tags && e.tags.length){map['_sem_tag']=[...(map['_sem_tag']||[]),e];}
+    else{e.tags.forEach(t=>{map[t]=[...(map[t]||[]),e];});}
+  });
+  el.innerHTML=Object.entries(map).sort(([a],[b])=>a==='_sem_tag'?1:b==='_sem_tag'?-1:a.localeCompare(b)).map(([tag,items])=>`
+    <div class="group">
+      <div class="group-header"><span class="group-tag">${tag==='_sem_tag'?'sem tag':esc(tag)}</span><span class="group-count">${items.length}</span></div>
+      <div class="card-list">${items.map(e=>learnCard(e)).join('')}</div>
+    </div>`).join('');
+}
+function learnCard(e){
+  return `<div class="l-card" onclick="showLearnDetail(${e.id})">
+    <div class="l-card-top"><span class="l-type">◎</span><span class="l-date">${fmtShort(e.createdAt)}</span></div>
+    <div class="l-title">${esc(e.title)}</div>
+    ${e.content?`<div class="l-preview">${esc(e.content)}</div>`:''}
+    ${(e.tags||[]).map(t=>`<span class="l-tag">${esc(t)}</span>`).join('')}
+  </div>`;
+}
+function toggleLearnTag(t){activeLearnTag=activeLearnTag===t?null:t;renderLearnList();}
+function clearLearnFilter(){activeLearnTag=null;$('learn-search').value='';renderLearnList();}
+
+// ─── Baseline ─────────────────────────────────────────────────
+function renderBaseline(){
+  if(baseline.updatedAt) $('baseline-updated').textContent='Última atualização: '+fmtDate(baseline.updatedAt);
+  const el=$('baseline-blocks'); el.innerHTML='';
+  ARMADILHAS.forEach(arm=>{
+    const score=baseline.scores[arm.id]|| 5; const color=scoreColor(score);
+    const note=baseline.notes[arm.id]||{};
+    const div=document.createElement('div'); div.className='bl-block';
+    div.innerHTML=`
+      <div class="bl-header">
+        <div class="bl-left"><span class="bl-num">${arm.id}</span><span class="bl-arm-label">${esc(arm.label)}</span></div>
+        <div class="bl-score-right"><span class="bl-score-num" id="bsv-${arm.id}" style="color:${color}">${score}</span><span class="bl-score-lbl" id="bsl-${arm.id}" style="color:${color}">${scoreLabel(score)}</span></div>
+      </div>
+      <input type="range" min="0" max="10" value="${score}" style="accentColor:${color}" oninput="updateBaselineScore(${arm.id},this.value)" id="bsr-${arm.id}">
+      <div class="bl-ticks">${[0,2,4,6,8,10].map(n=>`<span class="bl-tick">${n}</span>`).join('')}</div>
+      <div class="bl-fields">
+        ${[['percebo','Como me percebo neste padrão','Descreva como essa armadilha se manifesta em você...'],['quando','Quando e como aparece?','Situações, gatilhos, padrões que percebo...'],['gostaria','Como escolho que seja?','A versão de mim que quero cultivar aqui...']].map(([f,lbl,ph])=>`
+          <div class="bl-field">
+            <div class="bl-field-label">${lbl}</div>
+            <textarea class="bl-ta" rows="2" placeholder="${ph}" oninput="updateBaselineNote(${arm.id},'${f}',this.value)">${esc(note[f]||'')}</textarea>
+          </div>`).join('')}
+      </div>`;
+    el.appendChild(div);
+  });
+  $('baseline-save-btn').textContent='Salvar meu mapa';
+  $('baseline-save-btn').classList.remove('ok');
+}
+function updateBaselineScore(id,val){
+  val=Number(val); baseline.scores[id]=val; const c=scoreColor(val);
+  $('bsv-'+id).textContent=val; $('bsv-'+id).style.color=c;
+  $('bsl-'+id).textContent=scoreLabel(val); $('bsl-'+id).style.color=c;
+  $('bsr-'+id).style.accentColor=c;
+}
+function updateBaselineNote(id,field,val){
+  if(!baseline.notes[id])baseline.notes[id]={};
+  baseline.notes[id][field]=val;
+}
+function saveBaseline(){
+  baseline.updatedAt=new Date().toISOString();
+  save('baseline');
+  $('baseline-updated').textContent='Última atualização: '+fmtDate(baseline.updatedAt);
+  const btn=$('baseline-save-btn'); btn.textContent='✓ Mapa salvo'; btn.classList.add('ok');
+  setTimeout(()=>{btn.textContent='Salvar meu mapa';btn.classList.remove('ok');},2000);
+}
+
+// ─── Reference grid ───────────────────────────────────────────
+function renderRefGrid(){
+  $('ref-grid').innerHTML=ARMADILHAS.map(a=>`<div class="ref-item"><span class="ref-num">${a.id}</span><span class="ref-label">${esc(a.label)}</span></div>`).join('');
+}
+
+// ─── Update counts ────────────────────────────────────────────
+function renderAll(){
+  renderDiaryList(); renderLearnList();
+  const allLearnTags=[...new Set(learn.flatMap(e=>e.tags||[]))];
+  $('hc-diary-count').textContent=diary.length?`${diary.length} momento${diary.length>1?'s':''}`:' Nenhum momento ainda';
+  $('hc-learn-count').textContent=learn.length?`${learn.length} entrada${learn.length>1?'s':''} · ${allLearnTags.length} tag${allLearnTags.length!==1?'s':''}`:' Repertório vazio';
+  const td=$('tab-diary'); if(td) td.textContent=`Diário (${diary.length})`;
+  const tl=$('tab-learn'); if(tl) tl.textContent=`Aprendizados (${learn.length})`;
+}
+
+// ─── Escape HTML ──────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');}
+
+// ─── Arm suggest prompt ───────────────────────────────────────
+let armSugCopied = false;
+
+function buildArmSuggestPrompt() {
+  var situation = $('d-situation').value.trim();
+  var howFelt   = $('d-howfelt').value.trim();
+  var action = $('d-action').value.trim();
+  var arms = (dSelectedItems||[]).map(function(id){
+    var a = ARMADILHAS.find(function(x){ return x.id===id; });
+    var sc = dScores[id]||5;
+    return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10)';
+  }).join('\n');
+  return '[DESPERTAR \u2014 Sugestão de armadilhas]\n\n' +
+    'Sou o usuário de um diário de autoconhecimento baseado em 10 armadilhas mentais:\n' +
+    ARMADILHAS.map(function(a){ return a.id + '. ' + a.label; }).join('\n') + '\n\n' +
+    'Preenchi o seguinte momento:\n\n' +
+    'Padrões presentes:\n' + (arms||'—') + '\n\n' +
+    'O que surgiu: ' + (situation||'—') + '\n' +
+    'Como me percebi: ' + (howFelt||'—') + '\n' +
+    'O que escolho: ' + (action||'—') + '\n\n' +
+    'Com base neste relato, quais são as 3 armadilhas mais presentes? Responda apenas com:\n' +
+    '- Os números e nomes das 3 armadilhas em ordem de relevância\n' +
+    '- Uma linha explicando por que cada uma aparece neste relato\n' +
+    'Sem introdução, sem julgamento, direto ao ponto.';
+}
+
+function copyArmSuggest() {
+  var prompt = buildArmSuggestPrompt();
+  $('prompt-ta').value = prompt;
+  var btn = $('arm-suggest-btn');
+  var copy = function() {
+    btn.classList.add('copied');
+    btn.textContent = '✓  Prompt copiado! Cole no chat →';
+    setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML='◈ &nbsp;Quais armadilhas estão aqui? (IA)'; }, 2500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(prompt).then(copy).catch(function(){ $('prompt-ta').select(); document.execCommand('copy'); copy(); });
+  } else { $('prompt-ta').select(); document.execCommand('copy'); copy(); }
+}
+
+// ─── Analyses (Minha Jornada) ─────────────────────────────────
+function showAnalysesList() {
+  var el1 = document.getElementById('analyses-list');
+  var el2 = document.getElementById('analysis-new');
+  var el3 = document.getElementById('analysis-detail');
+  if(el1) el1.style.display = '';
+  if(el2) el2.style.display = 'none';
+  if(el3) el3.style.display = 'none';
+  renderAnalysesList();
+}
+
+function showAnalysisNew() {
+  document.getElementById('analyses-list').style.display = 'none';
+  document.getElementById('analysis-new').style.display = '';
+  document.getElementById('analysis-detail').style.display = 'none';
+  document.getElementById('analysis-form-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('an-title').value = '';
+  document.getElementById('an-content').value = '';
+  document.getElementById('an-moments').value = '';
+  document.getElementById('analysis-save-btn').textContent = 'Salvar na Jornada';
+  document.getElementById('analysis-save-btn').classList.remove('ok');
+}
+
+function showAnalysisDetail(id) {
+  var a = analyses.find(function(x){ return x.id===id; });
+  if(!a) return;
+  document.getElementById('analyses-list').style.display = 'none';
+  document.getElementById('analysis-new').style.display = 'none';
+  document.getElementById('analysis-detail').style.display = '';
+  var html = '';
+  html += '<div class="detail-title">' + esc(a.title||'Análise') + '</div>';
+  html += '<div class="form-date">' + fmtDate(a.createdAt) + '</div>';
+  html += '<div class="divider"></div>';
+  if(a.moments) html += '<div class="d-block"><div class="d-lbl">Momentos incluídos</div><div class="d-txt">' + esc(a.moments) + '</div></div>';
+  html += '<div class="d-block"><div class="d-lbl">Análise</div><div class="d-txt" style="font-size:14px;line-height:1.8">' + esc(a.content) + '</div></div>';
+  html += '<div class="divider"></div>';
+  html += '<button class="delete-btn" onclick="deleteAnalysis(' + id + ')">Apagar análise</button>';
+  document.getElementById('analysis-detail-content').innerHTML = html;
+}
+
+function saveAnalysis() {
+  var content = document.getElementById('an-content').value.trim();
+  if(!content) { alert('Cole a análise recebida antes de salvar.'); return; }
+  var entry = {
+    id: Date.now(),
+    createdAt: new Date().toISOString(),
+    title: document.getElementById('an-title').value.trim(),
+    content: content,
+    moments: document.getElementById('an-moments').value.trim(),
+    momentCount: diary.length
+  };
+  analyses.unshift(entry);
+  save('analyses');
+  renderAll();
+  var btn = document.getElementById('analysis-save-btn');
+  btn.textContent = '✓ Salvo';
+  btn.classList.add('ok');
+  setTimeout(function(){ showAnalysesList(); }, 900);
+}
+
+function deleteAnalysis(id) {
+  if(!confirm('Apagar esta análise?')) return;
+  analyses = analyses.filter(function(a){ return a.id !== id; });
+  save('analyses');
+  renderAll();
+  showAnalysesList();
+}
+
+function renderAnalysesList() {
+  var el = document.getElementById('analyses-cards');
+  if(!analyses.length) {
+    el.innerHTML = '<div class="empty">Nenhuma análise registrada ainda.<br><span style="font-size:13px;opacity:0.6">Gere sua primeira análise em Gerar análise na página inicial.</span></div>';
+    return;
+  }
+  var metaBtn = '';
+  if(analyses.length >= 3) {
+    metaBtn = '<div style="margin-bottom:18px"><button onclick="copyMetaPrompt()" style="width:100%;padding:11px;background:rgba(139,90,43,0.06);border:1px solid rgba(139,90,43,0.18);border-radius:8px;font-size:12px;color:#8b5a2b;cursor:pointer;letter-spacing:0.04em">◈  Gerar meta-análise (' + analyses.length + ' análises)</button></div>';
+  }
+  var cards = analyses.map(function(a) {
+    var preview = a.content.slice(0,120) + (a.content.length > 120 ? '…' : '');
+    return '<div class="d-card" onclick="showAnalysisDetail(' + a.id + ')">' +
+      '<div class="d-card-top"><span class="d-card-date">' + fmtDate(a.createdAt) + '</span><span style="color:#c8a96e">→</span></div>' +
+      (a.title ? '<div class="d-card-title">' + esc(a.title) + '</div>' : '') +
+      (a.moments ? '<div style="font-size:11px;color:#a07850;margin-bottom:6px">' + esc(a.moments) + '</div>' : '') +
+      '<div class="preview">' + esc(preview) + '</div>' +
+    '</div>';
+  }).join('');
+  el.innerHTML = metaBtn + cards;
+}
+
+function copyMetaPrompt() {
+  var analysesText = analyses.map(function(a, i) {
+    return '--- Análise ' + (i+1) + ': ' + (a.title||'sem título') + ' (' + a.createdAt.slice(0,10) + ') ---\n' +
+      (a.moments ? 'Momentos: ' + a.moments + '\n' : '') +
+      a.content;
+  }).join('\n\n');
+
+  var prompt = '[DESPERTAR — Meta-análise da Jornada]\n\n' +
+    'Tenho ' + analyses.length + ' análises acumuladas da minha jornada de autoconhecimento.\n\n' +
+    'A bússola que orienta minha jornada (AMOR):\n' +
+    'A — Acolhimento sem autopiedade\n' +
+    'M — Maestria do observador\n' +
+    'O — Olhar sem julgamento\n' +
+    'R — Renascimento da sua essência\n\n' +
+    'ANÁLISES ANTERIORES:\n' + analysesText + '\n\n' +
+    '---\n' +
+    'Com base nestas análises acumuladas, gere uma meta-análise da jornada:\n' +
+    '1. O que genuinamente se transformou ao longo do tempo\n' +
+    '2. O que ainda é padrão ativo e persistente\n' +
+    '3. O arco de evolução visível — de onde partiu, onde está\n' +
+    '4. Um único convite para o próximo ciclo\n\n' +
+    'Tom: espelho honesto da jornada real. Sem elogios. Sem dramatizar dificuldades. Texto corrido, máximo 400 palavras.';
+
+  $('prompt-ta').value = prompt;
+  var btn = event.target;
+  var copy = function() {
+    btn.textContent = '✓ Copiado — cole no chat com Claude';
+    btn.style.background = 'rgba(80,120,80,0.1)';
+    btn.style.borderColor = 'rgba(80,120,80,0.25)';
+    btn.style.color = '#3a6a3a';
+    setTimeout(function(){ renderAnalysesList(); }, 2500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(prompt).then(copy).catch(function(){ $('prompt-ta').select(); document.execCommand('copy'); copy(); });
+  } else { $('prompt-ta').select(); document.execCommand('copy'); copy(); }
+}
+
+// ─── Report modal ─────────────────────────────────────────────
+var reportSelected = {};
+
+function openReportModal() {
+  if(!diary.length) { alert('Nenhum momento no diário ainda.'); return; }
+  // Init all selected
+  diary.forEach(function(e) { reportSelected[e.id] = true; });
+  renderReportList();
+  document.getElementById('report-modal').style.display = 'block';
+}
+
+function closeReportModal(e) {
+  if(!e || e.target === document.getElementById('report-modal')) {
+    document.getElementById('report-modal').style.display = 'none';
+  }
+}
+
+function selectAllDiary(val) {
+  diary.forEach(function(e) { reportSelected[e.id] = val; });
+  renderReportList();
+}
+
+function toggleReportItem(id) {
+  reportSelected[id] = !reportSelected[id];
+  renderReportList();
+}
+
+function renderReportList() {
+  var el = document.getElementById('report-diary-list');
+  var selected = diary.filter(function(e){ return reportSelected[e.id]; }).length;
+  el.innerHTML = diary.map(function(e) {
+    var isOn = reportSelected[e.id];
+    var arms = (e.selectedItems||[]).map(function(id){
+      var a = ARMADILHAS.find(function(x){ return x.id==id; });
+      return a ? a.label : '';
+    }).join(', ');
+    return '<div class="report-item' + (isOn?' selected':'') + '" onclick="toggleReportItem(' + e.id + ')">' +
+      '<div class="report-item-check">' + (isOn?'✓':'') + '</div>' +
+      '<div>' +
+        '<div class="report-item-title">' + esc(e.title||'sem título') + '</div>' +
+        '<div class="report-item-meta">' + e.createdAt.slice(0,10) + (arms ? ' · ' + arms.slice(0,60) + (arms.length>60?'…':'') : '') + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  var btn = document.getElementById('report-gen-btn');
+  if(btn) {
+    btn.disabled = selected === 0;
+    btn.style.opacity = selected === 0 ? '0.4' : '1';
+    btn.textContent = selected === 0 ? 'Selecione ao menos 1 momento' : 'Copiar prompt para Claude (' + selected + ')';
+  }
+}
+
+// ─── Report prompt ─────────────────────────────────────────────
+function copyReportPrompt() {
+  var selectedDiary = diary.filter(function(e){ return reportSelected[e.id]; });
+  if(!selectedDiary.length) { alert('Selecione ao menos um momento.'); return; }
+
+  // Pattern frequency
+  var armCount = {};
+  selectedDiary.forEach(function(e) {
+    (e.selectedItems||[]).forEach(function(id) {
+      armCount[id] = (armCount[id]||0) + 1;
+    });
+  });
+  var topArms = Object.keys(armCount)
+    .sort(function(a,b){ return armCount[b]-armCount[a]; })
+    .map(function(id) {
+      var arm = ARMADILHAS.find(function(a){ return a.id==id; });
+      return '  ' + armCount[id] + 'x — ' + (arm ? arm.label : id);
+    }).join('\n');
+
+  // Diary entries
+  var entries = selectedDiary.map(function(e, i) {
+    var armLabels = (e.selectedItems||[]).map(function(id) {
+      var a = ARMADILHAS.find(function(x){ return x.id==id; });
+      return a ? a.label : id;
+    }).join(', ');
+    var scoreStr = (e.selectedItems||[]).map(function(id) {
+      var a = ARMADILHAS.find(function(x){ return x.id==id; });
+      return (a ? a.label : id) + ' ' + (e.scores&&e.scores[id]!=null?e.scores[id]:5) + '/10';
+    }).join(', ');
+    return '--- Momento ' + (i+1) + ': ' + (e.title||'sem título') + ' (' + e.createdAt.slice(0,10) + ') ---\n' +
+      'Padrões: ' + (armLabels||'—') + '\n' +
+      'Scores: ' + (scoreStr||'—') + '\n' +
+      'O que surgiu: ' + (e.situation||'—') + '\n' +
+      'Como me percebi: ' + (e.howFelt||'—') + '\n' +
+      'O que escolho: ' + (e.action||'—') + '\n' +
+      'O que escolho: ' + (e.action||'—') + '\n' +
+      'Reflexão recebida: ' + (e.suggestion||'—');
+  }).join('\n\n');
+
+  // Previous analyses context
+  var analysesCtx = '';
+  if(analyses.length) {
+    analysesCtx = '\n\nANÁLISES ANTERIORES (contexto de continuidade — considere a evolução ao longo do tempo):\n' +
+      analyses.slice(0,3).map(function(a) {
+        return '· ' + (a.title||'sem título') + ' (' + a.createdAt.slice(0,10) + '): ' + a.content.slice(0,200) + (a.content.length>200?'…':'');
+      }).join('\n');
+  }
+
+  // Repertório context
+  var learnCtx = '';
+  if(learn.length) {
+    learnCtx = '\n\nREPERTÓRIO DO USUÁRIO:\n' +
+      learn.map(function(l) {
+        return '· ' + (l.title||'') + (l.content ? ': ' + l.content.slice(0,300) + (l.content.length>300?'…':'') : '');
+      }).join('\n');
+  }
+
+  // Meu Mapa context
+  var baselineCtx = '';
+  if(baseline.updatedAt) {
+    var blLines = ARMADILHAS.map(function(a) {
+      var score = baseline.scores[a.id];
+      var note = baseline.notes[a.id]||{};
+      if(score==null && !note.percebo && !note.quando && !note.gostaria) return null;
+      return a.label + ' (score base: ' + (score!=null?score:'—') + '/10)' +
+        (note.percebo ? '\n  Como me percebo: ' + note.percebo : '') +
+        (note.quando ? '\n  Quando aparece: ' + note.quando : '') +
+        (note.gostaria ? '\n  Como escolho que seja: ' + note.gostaria : '');
+    }).filter(Boolean);
+    if(blLines.length) {
+      baselineCtx = '\n\nMEU MAPA (auto-percepção de base por padrão):\n' + blLines.join('\n\n');
+    }
+  }
+
+  var prompt =
+    '[DESPERTAR — Análise de Jornada]\n\n' +
+    '## SEU PAPEL\n' +
+    'Você é um espelho — não um conselheiro, terapeuta ou coach. Sua função é refletir o que os registros revelam, sem diagnosticar, sem prescrever, sem enquadrar o usuário em categorias psicológicas ou filosóficas.\n\n' +
+    '## A BÚSSOLA (norte da análise)\n' +
+    'Use estas quatro intenções como lente para ler os registros — elas definem o espírito da análise:\n' +
+    'A — Acolhimento sem autopiedade: receber-se como é, sem drama e sem negação\n' +
+    'M — Maestria do observador: notar o padrão antes de repeti-lo — quem observa já não é o mesmo que reage\n' +
+    'O — Olhar sem julgamento: ver o que é, sem condenar — a clareza que só vem quando o juiz se cala\n' +
+    'R — Renascimento da essência: não uma melhora do antigo eu — um novo começo a cada momento\n\n' +
+    '## OS 10 PADRÕES TRABALHADOS\n' +
+    '1. Culpa e arrependimento\n' +
+    '2. Necessidade de aprovação e reconhecimento\n' +
+    '3. Vergonha e indignidade\n' +
+    '4. Medo e ansiedade\n' +
+    '5. Inveja e ressentimento\n' +
+    '6. Reatividade emocional e impulsividade\n' +
+    '7. Resistência, negação e arrogância\n' +
+    '8. Preocupação e bloqueios materiais\n' +
+    '9. Bloqueios relacionais e carência\n' +
+    '10. Vitimização e queixa\n\n' +
+    'Os padrões servem como pontos de observação — não como categorias para explicar eventos. Evite encaixar relatos em caixas; prefira ver o que emerge além dessas lentes.\n\n' +
+    '## PAPEL DO REPERTÓRIO\n' +
+    'O repertório abaixo existe para evitar câmara de eco — use-o para ampliar o campo de visão e trazer o que os próprios olhos do usuário, de dentro, às vezes não alcançam. Não aplique frameworks do repertório. Não calibre a análise por ele. O norte é sempre a Bússola.\n\n' +
+    '## FORMATO DA RESPOSTA\n' +
+    '- Texto corrido, sem seções rotuladas, sem listas, sem diagnóstico\n' +
+    '- Descreva o que os momentos revelam — não explique por que acontece\n' +
+    '  * ❌ Evite: "Você faz isso porque teme escassez"\n' +
+    '  * ✓ Prefira: "Quando surge percepção de inadequação, aparece impulso de controlar ou corrigir"\n' +
+    '- Use "parece", "costuma", "há indicação de" em vez de afirmações sobre motivação profunda\n' +
+    '- Deixe espaço para o usuário reconhecer a causa real — você vê o padrão, não a origem\n' +
+    '- Tom: espelho honesto e gentil — claro sem ser duro, direto sem ser frio\n' +
+    '- Sem rótulos, sem elogios excessivos, sem linguagem de autoajuda\n' +
+    '- Feche com um único parágrafo, escolhendo uma das formas:\n' +
+    '  * "Permanece a pergunta:" — quando a abertura é mais importante\n' +
+    '  * "Talvez exista curiosidade em observar:" — quando convite suave funciona\n' +
+    '  * "Fica a imagem de:" — quando uma metáfora resume melhor\n' +
+    '  * "Que tal se houvesse curiosidade em perceber:" — quando transformação já ocorreu\n' +
+    '  Nascido diretamente do que foi observado, sem introduzir técnica ou objetivo implícito.\n' +
+    '- Máximo 400 palavras\n\n' +
+    '---\n\n' +
+    'FREQUÊNCIA DOS PADRÕES NOS MOMENTOS SELECIONADOS:\n' + topArms +
+    analysesCtx + baselineCtx + learnCtx +
+    '\n\nMOMENTOS DO DIÁRIO:\n' + entries;
+
+  $('prompt-ta').value = prompt;
+  var btn = document.getElementById('report-gen-btn');
+  var copy = function() {
+    btn.textContent = '✓ Copiado — cole no chat';
+    btn.style.background = '#5a8b4a';
+    setTimeout(function(){
+      document.getElementById('report-modal').style.display = 'none';
+      document.getElementById('report-btn').textContent = '◈ Gerar análise';
+    }, 2000);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(prompt).then(copy).catch(function(){ $('prompt-ta').select(); document.execCommand('copy'); copy(); });
+  } else { $('prompt-ta').select(); document.execCommand('copy'); copy(); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULO: SUPABASE SYNC
+// Responsabilidade: sincronização remota de diary[] com Supabase.
+// Sem dependência de UI exceto via DB.notify().
+// Não acessa CONFIG, LOGIC ou prompts.
+// ═══════════════════════════════════════════════════════════════
+
+const DB = {
+  url:    'https://mskraxyfzjtqmjhntwkr.supabase.co',
+  key:    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1za3JheHlmemp0cW1qaG50d2tyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3Mjc3NzcsImV4cCI6MjA5NTMwMzc3N30.-76VUzOJj44nfKgn-qllDuKu8N4idWeoS-V6-iYD3is',
+  client: null,
+  ready:  false,
+
+  // Converte linha do Supabase para formato interno diary
+  rowToEntry: function(row) {
+    return {
+      id:            row.id,
+      createdAt:     row.created_at,
+      title:         row.title        || '',
+      situation:     row.situation    || '',
+      howFelt:       row.how_felt     || '',
+      action:        row.action       || '',
+      selectedItems: Array.isArray(row.selected_items) ? row.selected_items : [],
+      scores:        row.scores       || {},
+      suggestion:    row.suggestion   || ''
+    };
+  },
+
+  // Converte entry interna para linha do Supabase
+  entryToRow: function(entry) {
+    return {
+      id:             entry.id,
+      created_at:     entry.createdAt,
+      title:          entry.title          || '',
+      situation:      entry.situation      || '',
+      how_felt:       entry.howFelt        || '',
+      action:         entry.action         || '',
+      selected_items: entry.selectedItems  || [],
+      scores:         entry.scores         || {},
+      suggestion:     entry.suggestion     || ''
+    };
+  },
+
+  // Inicializa cliente
+  init: function() {
+    if (!this.key || typeof window.supabase === 'undefined') return false;
+    try {
+      this.client = window.supabase.createClient(this.url, this.key);
+      this.ready  = true;
+      return true;
+    } catch(e) {
+      console.error('DB.init error:', e.message);
+      return false;
+    }
+  },
+
+  // Notifica UI do status
+  notify: function(connected) {
+    updateSyncStatus(
+      connected ? '☁ Conectado ao Supabase' : '○ Sem sincronizacao remota',
+      connected ? '#4a7a4a' : '#a07850'
+    );
+    setSyncStatus(connected);
+  },
+
+  // Carrega diary do Supabase (merge com local, sem sobrescrever)
+  load: async function() {
+    if (!this.ready) return false;
+    var self = this;
+    try {
+      var result = await this.client.from('diary').order('created_at', { ascending: false });
+      if (result.error) { console.error('DB.load error:', result.error.message); return false; }
+      if (!result.data || !result.data.length) return false;
+      var remote = result.data.map(function(row){ return self.rowToEntry(row); });
+      remote.forEach(function(entry) {
+        if (!diary.find(function(x){ return x.id === entry.id; })) diary.push(entry);
+      });
+      diary.sort(function(a, b){ return b.id - a.id; });
+      save('diary');
+      return true;
+    } catch(e) { console.error('DB.load error:', e.message); return false; }
+  },
+
+  // Salva um entry no Supabase (upsert)
+  // Se falhar (offline ou erro), enfileira para retry automatico.
+  saveEntry: async function(entry) {
+    if (!this.ready) { this.enqueue(entry); return false; }
+    try {
+      var result = await this.client.from('diary').upsert(this.entryToRow(entry), { onConflict: 'id' });
+      if (result.error) { console.error('DB.saveEntry error:', result.error.message); this.enqueue(entry); return false; }
+      // Sucesso -- tenta processar fila pendente
+      this.flushQueue();
+      return true;
+    } catch(e) {
+      console.error('DB.saveEntry error:', e.message);
+      this.enqueue(entry);
+      return false;
+    }
+  },
+
+  // Salva todo diary no Supabase (upsert em batch)
+  saveAll: async function() {
+    if (!this.ready) return false;
+    var self = this;
+    try {
+      var rows = diary.map(function(e){ return self.entryToRow(e); });
+      var result = await this.client.from('diary').upsert(rows, { onConflict: 'id' });
+      if (result.error) { console.error('DB.saveAll error:', result.error.message); return false; }
+      return true;
+    } catch(e) { console.error('DB.saveAll error:', e.message); return false; }
+  },
+
+  // ─── Fila de retry offline ──────────────────────────────────
+  // Quando saveEntry falha (offline ou erro de rede), o id do relato
+  // entra numa fila persistida em localStorage. A fila e processada:
+  //   - Apos qualquer saveEntry bem-sucedido
+  //   - Quando o navegador detecta retorno da conexao (evento 'online')
+  //   - No boot, apos DB.init() bem-sucedido
+  QUEUE_KEY: 'despertar-sync-queue',
+
+  getQueue: function() {
+    try { return JSON.parse(localStorage.getItem(this.QUEUE_KEY) || '[]'); }
+    catch(e) { return []; }
+  },
+
+  setQueue: function(ids) {
+    localStorage.setItem(this.QUEUE_KEY, JSON.stringify(ids));
+  },
+
+  enqueue: function(entry) {
+    var q = this.getQueue();
+    if (q.indexOf(entry.id) < 0) {
+      q.push(entry.id);
+      this.setQueue(q);
+      console.log('DB.enqueue: relato ' + entry.id + ' na fila (' + q.length + ' pendente(s))');
+    }
+  },
+
+  flushQueue: async function() {
+    if (!this.ready) return;
+    var q = this.getQueue();
+    if (!q.length) return;
+    console.log('DB.flushQueue: tentando sincronizar ' + q.length + ' relato(s) pendente(s)');
+    var stillPending = [];
+    for (var i = 0; i < q.length; i++) {
+      var id = q[i];
+      var entry = diary.find(function(x){ return x.id === id; });
+      if (!entry) continue; // relato foi apagado localmente
+      try {
+        var result = await this.client.from('diary').upsert(this.entryToRow(entry), { onConflict: 'id' });
+        if (result.error) { stillPending.push(id); }
+      } catch(e) { stillPending.push(id); }
+    }
+    this.setQueue(stillPending);
+    if (stillPending.length === 0) {
+      console.log('DB.flushQueue: fila vazia, sincronizacao completa');
+    } else {
+      console.log('DB.flushQueue: ' + stillPending.length + ' ainda pendente(s)');
+    }
+  },
+
+  // Testa conexao
+  test: async function() {
+    if (!this.ready) return false;
+    try {
+      var result = await this.client.from('diary').order('created_at', { ascending: false });
+      return !result.error;
+    } catch(e) { return false; }
+  }
+};
+
+// ─── UI: Status de sincronizacao ──────────────────────────────
+function updateSyncStatus(text, color) {
+  var el = document.getElementById('config-sync-status');
+  if (!el) return;
+  var dot = color === '#4a7a4a' ? '●' : color === '#8b2020' ? '●' : '◐';
+  el.innerHTML = '<span style="color:' + color + '">' + dot + '</span> ' + text;
+}
+
+// ─── UI: Acoes da pagina Configuracoes ────────────────────────
+function saveSupabaseConfig() {
+  var key = document.getElementById('config-supabase-key').value.trim();
+  if (!key) { alert('Cole sua chave de acesso do Supabase'); return; }
+  // Chave ja hardcoded — campo e apenas para referencia
+  updateSyncStatus('Chave ja configurada no app', '#4a7a4a');
+  alert('A chave ja esta configurada diretamente no app.');
+}
+
+function testSupabaseConnection() {
+  if (!DB.ready) { alert('Supabase nao inicializado.'); return; }
+  updateSyncStatus('Testando...', '#b8860b');
+  DB.test().then(function(ok) {
+    if (ok) { alert('Conexao bem-sucedida!'); updateSyncStatus('☁ Conectado ao Supabase', '#4a7a4a'); }
+    else    { alert('Erro na conexao. Verifique o console.'); updateSyncStatus('Erro na conexao', '#8b2020'); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FIM DO MODULO: SUPABASE SYNC
+// ═══════════════════════════════════════════════════════════════
+
+// ─── Init ─────────────────────────────────────────────────────
+// Sequencia: dados locais → UI → Supabase async (sem bloquear)
+load();
+renderRefGrid();
+renderAll();
+checkOnline();
+
+// Supabase: inicializa apos biblioteca CDN carregar
+setTimeout(function() {
+  if (DB.init()) {
+    DB.notify(true);
+    DB.load().then(function(loaded) {
+      if (loaded) renderAll();
+      // Processa fila pendente apos boot
+      DB.flushQueue();
+    });
+  } else {
+    DB.notify(false);
+  }
+}, 1000);
+
+// Retry automatico ao voltar online
+window.addEventListener('online', function() {
+  if (DB.ready) DB.flushQueue();
+});
+
+</script>
+</body>
+</html>
