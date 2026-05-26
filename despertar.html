@@ -18,71 +18,61 @@
 <script>
 // ════════════════════════════════════════════════════════════════
 // SUPABASE MINIMAL CLIENT
-// Implementação mínima do cliente Supabase REST para uso offline-first.
-// Substitui a biblioteca CDN (@supabase/supabase-js).
-// Suporta: select, upsert. Sem realtime, sem auth complexa.
-// Compatível com edge://external-file e file:// protocols.
+// Implementação mínima REST sem dependência CDN.
 // ════════════════════════════════════════════════════════════════
 window.supabase = {
   createClient: function(url, key) {
     var base = url + '/rest/v1';
-    var headers = {
-      'apikey':        key,
-      'Authorization': 'Bearer ' + key,
-      'Content-Type':  'application/json',
-      'Prefer':        'return=minimal'
-    };
-
-    function request(method, path, body, extraHeaders) {
-      return fetch(base + path, {
-        method:  method,
-        headers: Object.assign({}, headers, extraHeaders || {}),
-        body:    body ? JSON.stringify(body) : undefined
-      }).then(function(res) {
-        if (res.status === 204 || res.status === 200 || res.status === 201) {
-          return res.text().then(function(text) {
-            return { data: text ? JSON.parse(text) : [], error: null };
-          });
-        }
-        return res.json().then(function(err) {
-          return { data: null, error: { message: err.message || ('HTTP ' + res.status) } };
-        });
-      }).catch(function(e) {
-        return { data: null, error: { message: e.message } };
-      });
-    }
 
     return {
       from: function(table) {
         return {
-          select: function(cols, opts) {
-            var path = '/' + table + '?select=' + (cols || '*');
-            if (opts && opts.head) path += '&limit=0';
-            var extra = opts && opts.count === 'exact' ? { 'Prefer': 'count=exact' } : {};
-            return request('GET', path, null, extra).then(function(r) {
-              // parse order if needed — data already sorted server-side
-              return r;
+          order: function(col, opts) {
+            var asc = !opts || opts.ascending !== false ? 'asc' : 'desc';
+            var path = base + '/' + table + '?select=*&order=' + col + '.' + asc;
+            
+            return fetch(path, {
+              method: 'GET',
+              headers: {
+                'apikey': key,
+                'Authorization': 'Bearer ' + key
+              }
+            }).then(function(res) {
+              if (!res.ok) return { data: [], error: { message: 'HTTP ' + res.status } };
+              return res.json().then(function(data) {
+                return { data: Array.isArray(data) ? data : [], error: null };
+              }).catch(function(e) {
+                return { data: [], error: { message: e.message } };
+              });
+            }).catch(function(e) {
+              return { data: [], error: { message: e.message } };
             });
           },
-          order: function(col, opts) {
-            // chained after select — rebuild with order param
-            var asc = !opts || opts.ascending !== false;
-            var path = '/' + table + '?select=*&order=' + col + (asc ? '.asc' : '.desc');
-            return request('GET', path);
-          },
           upsert: function(data, opts) {
-            var conflict = (opts && opts.onConflict) ? opts.onConflict : 'id';
-            var extra = { 'Prefer': 'resolution=merge-duplicates,return=minimal' };
+            var path = base + '/' + table;
             var body = Array.isArray(data) ? data : [data];
-            return request('POST', '/' + table + '?on_conflict=' + conflict, body, extra);
+            
+            return fetch(path, {
+              method: 'POST',
+              headers: {
+                'apikey': key,
+                'Authorization': 'Bearer ' + key,
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates'
+              },
+              body: JSON.stringify(body)
+            }).then(function(res) {
+              if (!res.ok) return { data: null, error: { message: 'HTTP ' + res.status } };
+              return { data: body, error: null };
+            }).catch(function(e) {
+              return { data: null, error: { message: e.message } };
+            });
           }
         };
       }
     };
   }
 };
-// ════════════════════════════════════════════════════════════════
-// FIM: SUPABASE MINIMAL CLIENT
 // ════════════════════════════════════════════════════════════════
 </script>
 
