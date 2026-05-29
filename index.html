@@ -77,7 +77,7 @@ window.supabase = {
 </script>
 
 
-<title>Despertar</title>
+<title>Despertar v5.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -96,11 +96,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 #header{position:sticky;top:0;z-index:100;background:rgba(248,238,215,0.97);backdrop-filter:blur(10px);border-bottom:1px solid rgba(139,90,43,0.14);padding:10px 20px 14px}
 #header-inner{max-width:680px;margin:0 auto;display:flex;align-items:center;justify-content:center;padding:0}
 .logo-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;font-style:italic;letter-spacing:0.04em;color:#3a2008}
-.logo-sub{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#a07850;margin-top:2px}
-.tabs{display:flex;gap:4px;flex-wrap:wrap}
-.tab{background:transparent;border:none;font-size:11px;color:#a07850;cursor:pointer;padding:6px 9px;border-radius:6px;font-family:'Lato',sans-serif;transition:all 0.15s;white-space:nowrap;flex-shrink:0}
-.tab.active{background:rgba(139,90,43,0.1);color:#2a1408;font-weight:400}
-.tab:hover{color:#2a1408}
 
 #content{max-width:680px;margin:0 auto;padding:24px 20px 100px}
 
@@ -109,10 +104,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .page.active{display:block}
 
 /* Home opening page */
-.home-logo-wrap{text-align:center;padding:16px 0 12px}
-.home-logo-star{font-size:20px;color:#c8a96e;display:block;margin-bottom:10px}
-.home-logo-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;font-style:italic;color:#2a1408;letter-spacing:0.04em;line-height:1}
-.home-logo-sub{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#a07850;margin-top:8px}
 .home-divider{height:1px;background:linear-gradient(to right,transparent,rgba(139,90,43,0.22),transparent);margin:14px 0}
 .home-what{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:300;line-height:1.65;color:#3a2008;text-align:center}
 .manifesto-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#a07850;text-align:center;margin-bottom:18px}
@@ -321,16 +312,12 @@ textarea.bl-ta:focus{outline:none;border-color:rgba(139,90,43,0.35)}
 
 /* Arm suggest */
 .arm-suggest-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(139,90,43,0.04);border:1px dashed rgba(139,90,43,0.22);color:#8b5a2b;padding:11px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s;width:100%;font-family:'Lato',sans-serif;margin-top:6px}
-.arm-suggest-btn:hover{background:rgba(139,90,43,0.08);border-color:rgba(139,90,43,0.35)}
-.arm-suggest-btn.copied{background:rgba(80,120,80,0.06);border-color:rgba(80,120,80,0.25);color:#3a6a3a}
+/* Safe area — iPhone notch / Dynamic Island */
+#header{padding-top:env(safe-area-inset-top,0px)}
+body{padding-bottom:env(safe-area-inset-bottom,0px)}
 </style>
 </head>
 <body>
-<style>
-/* Safe area for iPhone notch / Dynamic Island */
-#header { padding-top: env(safe-area-inset-top, 0px); }
-body { padding-bottom: env(safe-area-inset-bottom, 0px); }
-</style>
 
 <div id="header">
   <div id="header-inner">
@@ -410,9 +397,8 @@ body { padding-bottom: env(safe-area-inset-bottom, 0px); }
       <div id="offline-notice" style="display:none;background:rgba(200,140,40,0.08);border:1px solid rgba(200,140,40,0.2);border-radius:7px;padding:8px 12px;font-size:11px;color:#7a5a10;line-height:1.5;margin-top:8px">
         ⚠ Sem conexão — dados salvos localmente.
       </div>
-      <!-- BOTAO TEMPORARIO: remover apos confirmacao de sync -->
       <div id="force-sync-wrap" style="margin-top:10px">
-        <button onclick="forceSyncNow()" style="background:rgba(74,122,74,0.1);border:1px solid rgba(74,122,74,0.3);font-size:11px;color:#4a7a4a;cursor:pointer;font-family:'Lato',sans-serif;padding:8px 18px;border-radius:20px;letter-spacing:0.04em">
+        <button onclick="syncAllNow()" style="background:rgba(74,122,74,0.1);border:1px solid rgba(74,122,74,0.3);font-size:11px;color:#4a7a4a;cursor:pointer;font-family:'Lato',sans-serif;padding:8px 18px;border-radius:20px;letter-spacing:0.04em">
           ☁ Sincronizar tudo agora
         </button>
         <div id="force-sync-status" style="font-size:10px;color:#a07850;margin-top:6px;min-height:14px"></div>
@@ -801,6 +787,9 @@ body { padding-bottom: env(safe-area-inset-bottom, 0px); }
       <div style="text-align:center;padding:16px 0;font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:#c8b89a">
         "Não adianta só compreender na mente.<br>Preciso me experimentar de verdade."
       </div>
+      <div style="text-align:center;padding:8px 0 0;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(200,169,110,0.35)">
+        v5.4
+      </div>
 
     </div>
   </div>
@@ -932,7 +921,10 @@ const SEED2 = {
 // ════════════════════════════════════════════════════════════════
 
 const DESPERTAR_CONFIG = {
-  versao: { id: 'v4.9++', score_base: 83, data: '2026-05-21', historico: [] },
+  versao: { id: 'v5.4', score_base: 100, data: '2026-05-29', historico: [
+    { data: '2026-05-28', mudanca: 'Calibracao Bussola 3 niveis', zona: 'AMARELA', score_antes: 83, score_depois: 99 },
+    { data: '2026-05-29', mudanca: 'Auditoria estrutural v5.4', zona: 'VERDE', score_antes: 99, score_depois: 100 }
+  ] },
   bussola: {
     acronimo: 'AMOR',
     vetores: [
@@ -940,8 +932,7 @@ const DESPERTAR_CONFIG = {
       { letra: 'M', titulo: 'Maestria do observador', desc: 'Quebrar o hábito de ser quem você era.' },
       { letra: 'O', titulo: 'Olhar sem julgamento', desc: 'Ver o que é, sem categoria moral.' },
       { letra: 'R', titulo: 'Renascimento da essência', desc: 'Permitir que o novo emerge.' }
-    ],
-    calibracao: { min: 5, max: 40 }
+    ]
   },
   padroes: [
     {id:1,label:"Culpa e arrependimento"},
@@ -959,13 +950,13 @@ const DESPERTAR_CONFIG = {
     { id: 1, nome: 'Espelho honesto', zona: 'AMARELA', afeta_se: ['bussola','prompt_analise'] },
     { id: 2, nome: 'Sem prescrição', zona: 'AMARELA', afeta_se: ['prompt_reflexao'] },
     { id: 3, nome: 'Sem identidade cristalizada', zona: 'AMARELA', afeta_se: ['prompt_analise','padroes'] },
-    { id: 4, nome: 'Bássola não forçada', zona: 'AMARELA', afeta_se: ['bussola','calibracao'] },
+    { id: 4, nome: 'Bássola não forçada', zona: 'AMARELA', afeta_se: ['bussola','prompt_reflexao'] },
     { id: 5, nome: 'Sem deriva de progresso', zona: 'VERMELHA', afeta_se: ['prompt_inteiro'] },
     { id: 6, nome: 'Coexistência sem peso', zona: 'AMARELA', afeta_se: ['prompt_analise','padroes'] },
     { id: 7, nome: 'Identidade pré-formada', zona: 'AMARELA', afeta_se: ['prompt_analise'] },
     { id: 8, nome: 'Material abstrato honrado', zona: 'AMARELA', afeta_se: ['prompt_analise'] },
     { id: 9, nome: 'Múltiplos padrões como interação', zona: 'AMARELA', afeta_se: ['prompt_analise'] },
-    { id: 10, nome: 'Calibração implícita', zona: 'VERMELHA', afeta_se: ['bussola','calibracao'] },
+    { id: 10, nome: 'Calibração implícita', zona: 'VERMELHA', afeta_se: ['bussola','prompt_reflexao'] },
     { id: 11, nome: 'Peso zero diferencial', zona: 'VERMELHA', afeta_se: ['prompt_analise','padroes'] }
   ]
 };
@@ -1104,45 +1095,6 @@ function checkOnline() {
 window.addEventListener('online',  checkOnline);
 window.addEventListener('offline', checkOnline);
 
-// ─── Força sync manual ────────────────────────────────────────
-function forceSyncNow() {
-  var el = document.getElementById('force-sync-status');
-  // Diagnóstico
-  var supabaseLoaded = typeof window.supabase !== 'undefined';
-  if (!supabaseLoaded) {
-    if (el) el.textContent = 'Erro: biblioteca não carregou (sem internet ou bloqueio). Verifique conexão e recarregue.';
-    return;
-  }
-  // Tenta inicializar DB se ainda não estiver pronto
-  if (!DB.ready) {
-    if (el) el.textContent = 'Inicializando...';
-    var ok = DB.init();
-    if (!ok) {
-      if (el) el.textContent = 'Erro ao inicializar cliente Supabase.';
-      return;
-    }
-  }
-  if (el) el.textContent = 'Sincronizando ' + diary.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; }).length + ' relato(s)...';
-  var userDiary = diary.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; });
-  if (!userDiary.length) {
-    if (el) el.textContent = 'Nenhum relato para sincronizar.';
-    return;
-  }
-  var self = DB;
-  var rows = userDiary.map(function(e){ return self.entryToRow(e); });
-  DB.client.from('diary').upsert(rows, { onConflict: 'id' }).then(function(result) {
-    if (result.error) {
-      if (el) el.textContent = 'Erro Supabase: ' + result.error.message;
-    } else {
-      if (el) el.textContent = '✓ ' + userDiary.length + ' relato(s) sincronizado(s).';
-      setBackupStatus('☁ Sincronizado com Supabase', '#4a7a4a');
-      DB.ready = true;
-    }
-  }).catch(function(e) {
-    if (el) el.textContent = 'Erro rede: ' + e.message;
-  });
-}
-
 // ═══════════════════════════════════════════════════════════════
 // FIM DO MODULO: STATUS DE SINCRONIZACAO
 // ═══════════════════════════════════════════════════════════════
@@ -1156,7 +1108,6 @@ function forceSyncNow() {
 // ─── Navigation ───────────────────────────────────────────────
 function setTab(tab) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.inner-tab').forEach(t=>t.classList.remove('active-tab'));
   const page = $('page-'+tab); if(page) page.classList.add('active');
   const tabEl = $('tab-'+tab); if(tabEl) tabEl.classList.add('active');
@@ -1169,8 +1120,6 @@ function setTab(tab) {
   if(tab==='analyses') showAnalysesList();
   if(tab==='baseline') renderBaseline();
 }
-function goHome() { setTab('home'); }
-
 // ─── Diary ────────────────────────────────────────────────────
 function showDiaryList() {
   $('diary-list').style.display=''; $('diary-new').style.display='none'; $('diary-detail').style.display='none';
@@ -1185,7 +1134,6 @@ function showDiaryNew(entry=null) {
     : new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
   $('d-title').value = (entry && entry.title)||'';
   $('d-situation').value = (entry && entry.situation)||'';
-  $('d-howfelt').value = (entry && entry.howFelt)||'';
   $('d-howfelt').value = (entry && entry.howFelt)||'';
   $('d-action').value = (entry && entry.action)||'';
   $('d-suggestion').value = (entry && entry.suggestion)||'';
@@ -1293,7 +1241,7 @@ function buildPrompt() {
     var sc = dScores[id]||5;
     return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10 \u2014 ' + scoreLabel(sc) + ')';
   }).join('\n');
-  return '[DESPERTAR \u2014 An\u00e1lise v4.9++]\n\n' +
+  return '[DESPERTAR \u2014 An\u00e1lise v5.3]\n\n' +
     'Padr\u00f5es presentes:\n' + (arms||'\u2014') + '\n\n' +
     'O que surgiu:\n' + ($('d-situation').value||'\u2014') + '\n\n' +
     'Como me percebi:\n' + ($('d-howfelt').value||'\u2014') + '\n\n' +
@@ -1301,9 +1249,13 @@ function buildPrompt() {
     '---\n\n' +
     'SEU PAPEL: Voc\u00ea \u00e9 um espelho \u2014 n\u00e3o conselheiro, terapeuta ou coach. Reflita o que os registros revelam sem diagnosticar, prescrever ou enquadrar em categorias.\n\n' +
     'B\u00daSSOLA (norte): A=Acolhimento sem autopiedade / M=Maestria do observador / O=Olhar sem julgamento / R=Renascimento da ess\u00eancia\n\n' +
+    'CALIBRA\u00c7\u00c3O DA B\u00daSSOLA (aplicar silenciosamente \u2014 nunca anunciar):\n' +
+    '\u2014 Rela\u00e7\u00e3o com emo\u00e7\u00e3o densa e pouca reflex\u00e3o \u2192 B\u00fassola m\u00ednima: tom neutro, sem perspectiva filos\u00f3fica\n' +
+    '\u2014 Rela\u00e7\u00e3o com questionamento presente \u2192 B\u00fassola moderada: pergunta colorida, sem prescri\u00e7\u00e3o\n' +
+    '\u2014 Rela\u00e7\u00e3o com reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: perspectiva ampliada\n\n' +
     'INSTRU\u00c7\u00d5ES:\n' +
     '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece", "costuma", "h\u00e1 indica\u00e7\u00e3o". Recorr\u00eancia \u2260 identidade. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos.\n\n' +
-    '2. REFLEX\u00c3O: 3-4 frases. Primeiro: ancora no relato (2 frases que nomeiam a tens\u00e3o real observada, sem explicar causa). Depois: pergunta aberta nascida dessa tens\u00e3o, colorida pela B\u00fassola. SE h\u00e1 transforma\u00e7\u00e3o j\u00e1 ocorrida: nomeie o que coexiste antes de perguntar. SE h\u00e1 padr\u00e3o ativo: nomeie o movimento antes de convidar. Tom: Maestria do observador e Olhar sem julgamento como norte. Nunca: tarefa, m\u00e9todo, asseguramento, prescri\u00e7\u00e3o.\n\n' +
+    '2. REFLEX\u00c3O: 3-4 frases. Primeiro: ancora no relato (2 frases que nomeiam a tens\u00e3o real observada, sem explicar causa). Depois: pergunta aberta nascida dessa tens\u00e3o, colorida pela B\u00fassola conforme calibra\u00e7\u00e3o. SE h\u00e1 transforma\u00e7\u00e3o j\u00e1 ocorrida: nomeie o que coexiste antes de perguntar. SE h\u00e1 padr\u00e3o ativo: nomeie o movimento antes de convidar. Tom: Maestria do observador e Olhar sem julgamento como norte. Nunca: tarefa, m\u00e9todo, asseguramento, prescri\u00e7\u00e3o.\n\n' +
     'PROTE\u00c7\u00d5ES: Padr\u00e3o \u2260 identidade. N\u00e3o celebre progresso. Deixe espa\u00e7o para o usu\u00e1rio reconhecer a origem. B\u00fassola orienta tom, n\u00e3o substitui o que emerge.';
 }
 function copyPrompt() {
@@ -1342,8 +1294,7 @@ function saveDiary() {
     selectedItems:[...dSelectedItems],
     scores:{...dScores},
     situation:$('d-situation').value.trim(),
-    howFelt:$('d-howfelt').value.trim(),  // now includes both percebi + escolho
-    howWished:$('d-action').value.trim(),  // now part of action
+    howFelt:$('d-howfelt').value.trim(),
     action:$('d-action').value.trim(),
     suggestion:$('d-suggestion').value.trim(),
   };
@@ -1383,7 +1334,6 @@ function renderDiaryList() {
       (e.title||'').toLowerCase().includes(keyword) ||
       (e.situation||'').toLowerCase().includes(keyword) ||
       (e.howFelt||'').toLowerCase().includes(keyword) ||
-      (e.howWished||'').toLowerCase().includes(keyword) ||
       (e.action||'').toLowerCase().includes(keyword) ||
       (e.selectedItems||[]).some(id=>((function(){var a=ARMADILHAS.find(a=>a.id===id);return (a&&a.label)||'';})()).toLowerCase().includes(keyword))
     );
@@ -1488,8 +1438,8 @@ function renderLearnList(){
   // Grouped by tag
   const map={};
   learn.forEach(e=>{
-    if(e.tags && e.tags.length){map['_sem_tag']=[...(map['_sem_tag']||[]),e];}
-    else{e.tags.forEach(t=>{map[t]=[...(map[t]||[]),e];});}
+    if(!e.tags || !e.tags.length){ map['_sem_tag']=[...(map['_sem_tag']||[]),e]; }
+    else{ e.tags.forEach(t=>{ map[t]=[...(map[t]||[]),e]; }); }
   });
   el.innerHTML=Object.entries(map).sort(([a],[b])=>a==='_sem_tag'?1:b==='_sem_tag'?-1:a.localeCompare(b)).map(([tag,items])=>`
     <div class="group">
@@ -1570,9 +1520,6 @@ function renderAll(){
 
 // ─── Escape HTML ──────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');}
-
-// ─── Arm suggest prompt ───────────────────────────────────────
-let armSugCopied = false;
 
 function buildArmSuggestPrompt() {
   var situation = $('d-situation').value.trim();
@@ -2118,6 +2065,25 @@ function testSupabaseConnection() {
   DB.test().then(function(ok) {
     if (ok) { alert('Conexao bem-sucedida!'); updateSyncStatus('☁ Conectado ao Supabase', '#4a7a4a'); }
     else    { alert('Erro na conexao. Verifique o console.'); updateSyncStatus('Erro na conexao', '#8b2020'); }
+  });
+}
+
+function syncAllNow() {
+  var el = document.getElementById('force-sync-status');
+  if (!DB.ready) {
+    var ok = DB.init();
+    if (!ok) { if(el) el.textContent = 'Erro ao inicializar Supabase.'; return; }
+  }
+  var userDiary = diary.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; });
+  if (!userDiary.length) { if(el) el.textContent = 'Nenhum relato para sincronizar.'; return; }
+  if(el) el.textContent = 'Sincronizando ' + userDiary.length + ' relato(s)...';
+  DB.saveAll().then(function(ok) {
+    if (ok) {
+      if(el) el.textContent = '✓ ' + userDiary.length + ' relato(s) sincronizado(s).';
+      setBackupStatus('☁ Sincronizado com Supabase', '#4a7a4a');
+    } else {
+      if(el) el.textContent = 'Erro na sincronização. Tente novamente.';
+    }
   });
 }
 
