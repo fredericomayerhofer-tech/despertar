@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DESPERTAR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --moss: #3d4f47;
+  --cream: #f5f1e8;
+  --white: #ffffff;
+  --red: #e84c3d;
+  --light: rgba(245,241,232,0.85);
+  --dim: rgba(245,241,232,0.5);
+  --dark-moss: #2d3f37;
+}
+
+html { background: var(--moss); }
+body {
+  background: var(--moss) !important;
+  color: var(--cream);
+  font-family: 'Libre Baskerville', serif;
+  overflow-x: hidden;
+  line-height: 1.8;
+  width: 100%;
+}
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 40px 60px;
+  position: relative;
+  background: var(--moss);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.hero-v {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  color: var(--dim);
+  z-index: 1;
+  text-transform: uppercase;
+}
+
+.hero-c { position: relative; z-index: 1; max-width: 700px; }
+
+.hero-e {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: up 0.8s 0.2s forwards;
+}
+
+.hero-t {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(64px, 15vw, 160px);
+  line-height: 0.88;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: up 0.8s 0.4s forwards;
+}
+
+.hero-t span { color: var(--red); }
+
+.hero-s {
+  font-size: clamp(16px, 2vw, 22px);
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--light);
+  max-width: 520px;
+  border-left: 3px solid var(--red);
+  padding-left: 20px;
+  opacity: 0;
+  animation: up 0.8s 0.6s forwards;
+}
+
+/* SECTIONS */
+.s {
+  padding: 80px 40px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  max-width: 1000px;
+  margin: 0 auto;
+  background: var(--moss);
+}
+
+.s-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 40px;
+  font-weight: 400;
+}
+
+.s-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(36px, 7vw, 72px);
+  line-height: 0.96;
+  letter-spacing: 0.02em;
+  margin-bottom: 40px;
+  color: var(--white);
+}
+
+.s-title em {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  color: var(--red);
+  font-weight: 400;
+  font-size: 0.65em;
+  display: block;
+  margin-top: 6px;
+  letter-spacing: 0.01em;
+}
+
+p.b {
+  font-size: clamp(15px, 1.55vw, 17px);
+  line-height: 1.85;
+  color: var(--light);
+  max-width: 600px;
+  margin-bottom: 20px;
+}
+
+p.b strong { color: var(--white); font-weight: 700; }
+
+/* MOVEMENTS */
+.moves {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 1px;
+  background: rgba(0,0,0,0.2);
+  margin-top: 60px;
+}
+
+.move {
+  background: var(--dark-moss);
+  padding: 44px 32px;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.move:hover { 
+  border-color: var(--red);
+  background: #455556;
+}
+
+.move-n {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 64px;
+  color: rgba(229,76,61,0.2);
+  line-height: 0.9;
+  margin-bottom: 12px;
+  transition: color 0.3s;
+}
+
+.move:hover .move-n { color: var(--red); }
+
+.move-t {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  margin-bottom: 14px;
+  line-height: 1.1;
+}
+
+.move p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--light);
+}
+
+/* COMPASS */
+.compass {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(0,0,0,0.2);
+  margin-top: 60px;
+}
+
+.cv {
+  background: var(--dark-moss);
+  padding: 36px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.3s;
+}
+
+.cv:hover { background: #455556; }
+
+.cv-l {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 72px;
+  line-height: 0.85;
+  color: var(--red);
+  flex-shrink: 0;
+  width: 48px;
+}
+
+.cv-t strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+  letter-spacing: 0.03em;
+}
+
+.cv-t span {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--dim);
+}
+
+/* NOT grid */
+.nots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(0,0,0,0.2);
+  margin-top: 60px;
+}
+
+.not {
+  background: var(--dark-moss);
+  padding: 36px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.not-x {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.not-x::before {
+  content: '✕';
+  color: var(--red);
+  font-size: 16px;
+}
+
+.not h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+
+.not p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--light);
+}
+
+/* PLAYERS */
+.players {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 1px;
+  background: rgba(0,0,0,0.2);
+  margin-top: 60px;
+}
+
+.player {
+  background: var(--dark-moss);
+  padding: 28px 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.player-n {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.player h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  margin-bottom: 10px;
+}
+
+.player p {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--light);
+  margin-bottom: 0;
+}
+
+.player-fail {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+/* TABLE */
+.ctable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 60px;
+}
+
+.ctable th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-weight: 400;
+  background: var(--moss);
+}
+
+.ctable td {
+  padding: 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13px;
+  line-height: 1.6;
+  vertical-align: top;
+  background: var(--dark-moss);
+}
+
+.ctable td:first-child {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding-right: 32px;
+}
+
+.ctable td:nth-child(2) { color: var(--light); }
+.ctable td:nth-child(3) { color: var(--white); font-weight: 500; }
+
+.tag-zero {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--red);
+  border: 1px solid var(--red);
+  padding: 4px 10px;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+/* HONESTY */
+.honest {
+  margin-top: 60px;
+  border-left: 3px solid var(--red);
+  padding: 32px 36px;
+  background: var(--dark-moss);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.honest p {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--light);
+  max-width: none;
+  margin-bottom: 14px;
+}
+
+.honest p:last-child { margin-bottom: 0; }
+.honest p strong { color: var(--white); }
+
+/* RELEVANCE */
+.rels {
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: rgba(0,0,0,0.2);
+}
+
+.rel {
+  background: var(--dark-moss);
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.rel-k {
+  padding: 28px 32px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--red);
+  display: flex;
+  align-items: flex-start;
+}
+
+.rel-v {
+  padding: 28px 32px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--light);
+}
+
+.rel-v strong { color: var(--white); font-weight: 700; }
+
+/* CLOSING */
+.closing {
+  min-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 40px;
+  position: relative;
+  background: var(--moss);
+}
+
+.closing-q {
+  position: relative;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 11vw, 110px);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  margin-bottom: 48px;
+  max-width: 900px;
+}
+
+.closing-q span { color: var(--red); }
+
+.closing-a {
+  position: relative;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+/* ANIMATIONS */
+@keyframes up {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:none; }
+}
+
+.reveal { opacity:0; transform:translateY(28px); transition:opacity 0.9s ease, transform 0.9s ease; }
+.reveal.on { opacity:1; transform:none; }
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .hero { padding: 0 24px 50px; }
+  .s { padding: 60px 24px; }
+  .moves, .nots, .compass { grid-template-columns: 1fr; }
+  .players { grid-template-columns: 1fr 1fr; }
+  .rel { grid-template-columns: 1fr; }
+  .rel-k { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .hero-v { display: none; }
+  .closing { padding: 60px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-v">v5.7</div>
+  <div class="hero-c">
+    <div class="hero-e">Instrumento de autoconhecimento com IA</div>
+    <div class="hero-t">DES<span>P</span>ERTAR</div>
+    <div class="hero-s">
+      As ferramentas de desenvolvimento humano resolvem o problema errado. Elas entregam resposta. O significado fica com o sistema.
+    </div>
+  </div>
+</div>
+
+<!-- PROPÓSITO -->
+<div class="s reveal">
+  <div class="s-tag">01 — Propósito</div>
+  <div class="s-title">O espelho que não fala
+    <em>não interpreta. não prescreve. não molda.</em>
+  </div>
+  <p class="b">A maioria das ferramentas assume que o usuário precisa de algo que o sistema tem. CBT, ACT, coaching, frameworks — cada um chega com uma narrativa pronta sobre quem você é e o que está errado.</p>
+  <p class="b">O Despertar inverte a premissa: <strong>o usuário já tem o que precisa. Precisa ver.</strong> Um espelho não diz o que você é. Ele mostra o que você vê. O resto é seu.</p>
+
+  <div class="moves">
+    <div class="move">
+      <div class="move-n">01</div>
+      <div class="move-t">Observação</div>
+      <p>Registro do momento vivido. 10 Estados Mentais oferecem linguagem para nomear o que surgiu — roteiros de observação, nunca rótulos.</p>
+    </div>
+    <div class="move">
+      <div class="move-n">02</div>
+      <div class="move-t">Espelhamento</div>
+      <p>A IA descreve o que o relato revela. Sem causa. Sem diagnóstico. "Parece que", "costuma aparecer quando". Padrão não é identidade.</p>
+    </div>
+    <div class="move">
+      <div class="move-n">03</div>
+      <div class="move-t">Expansão</div>
+      <p>Uma pergunta aberta nascida da tensão real do relato. Não uma tarefa. Uma perspectiva — calibrada pelo estado reflexivo.</p>
+    </div>
+  </div>
+</div>
+
+<!-- BÚSSOLA -->
+<div class="s reveal">
+  <div class="s-tag">02 — Norte filosófico</div>
+  <div class="s-title">AMOR
+    <em>o único orientador. calibra o tom, não o conteúdo.</em>
+  </div>
+  <p class="b">A Bússola não define o que o espelho mostra. Define com que intensidade a perspectiva aparece — recua quando o usuário está em emoção densa, avança quando ele já está em modo observador.</p>
+
+  <div class="compass">
+    <div class="cv">
+      <div class="cv-l">A</div>
+      <div class="cv-t">
+        <strong>Acolhimento sem autopiedade</strong>
+        <span>Receber-se como é — sem afundar</span>
+      </div>
+    </div>
+    <div class="cv">
+      <div class="cv-l">M</div>
+      <div class="cv-t">
+        <strong>Maestria do observador</strong>
+        <span>Ver com distância — sem dissociar</span>
+      </div>
+    </div>
+    <div class="cv">
+      <div class="cv-l">O</div>
+      <div class="cv-t">
+        <strong>Olhar sem julgamento</strong>
+        <span>Descrever — sem avaliar bom ou ruim</span>
+      </div>
+    </div>
+    <div class="cv">
+      <div class="cv-l">R</div>
+      <div class="cv-t">
+        <strong>Renascimento da essência</strong>
+        <span>O que emerge quando o ruído baixa</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- O QUE NÃO É -->
+<div class="s reveal">
+  <div class="s-tag">03 — O que não é</div>
+  <div class="s-title">Definido pelas recusas
+    <em>cada ausência é uma decisão arquitetural</em>
+  </div>
+  <p class="b">O que o Despertar não faz não é limitação — é posição. Cada framework removido foi retirado porque carregava uma direção causal que roubava o espaço do usuário.</p>
+
+  <div class="nots">
+    <div class="not">
+      <div class="not-x">Terapeuta</div>
+      <h3>Não diagnostica</h3>
+      <p>CBT, ACT e Mindfulness foram removidos por carregarem narrativa antes que o usuário chegue à sua. O sistema não trata, não enquadra, não substitui processo clínico.</p>
+    </div>
+    <div class="not">
+      <div class="not-x">Coach</div>
+      <h3>Não prescreve</h3>
+      <p>Nenhuma tarefa, nenhuma meta, nenhuma celebração. A IA não sabe se houve progresso. Só o usuário, com distância temporal, pode avaliar.</p>
+    </div>
+    <div class="not">
+      <div class="not-x">Mentor</div>
+      <h3>Não interpreta</h3>
+      <p>Não oferece sabedoria de outra voz antes que o usuário chegue à sua. Nomeie o que aparece, nunca avalie o que significa.</p>
+    </div>
+    <div class="not">
+      <div class="not-x">Historiador</div>
+      <h3>Não acumula narrativa</h3>
+      <p>Cada relato é lido limpo. O sistema não transforma recorrência em essência nem padrão em identidade. Você não vira seu histórico.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MERCADO -->
+<div class="s reveal">
+  <div class="s-tag">04 — Mercado</div>
+  <div class="s-title">$6 bilhões em 2026
+    <em>todos entregando direção. todos falam em espelho.</em>
+  </div>
+  <p class="b">Os quatro players que definem o espaço operam cada um numa variação da mesma lógica: o usuário precisa de algo que o sistema tem.</p>
+
+  <div class="players">
+    <div class="player">
+      <div class="player-n">Rosebud</div>
+      <h3>Suporte emocional</h3>
+      <p>CBT e ACT. Validação. $6M seed.</p>
+      <div class="player-fail">Warmth constante impede confronto real. Sai apoiado — não mais claro.</div>
+    </div>
+    <div class="player">
+      <div class="player-n">Mindsera</div>
+      <h3>Otimização cognitiva</h3>
+      <p>50+ frameworks. Distorções. Decisão.</p>
+      <div class="player-fail">Trata emoção como erro. Não serve quem quer processar.</div>
+    </div>
+    <div class="player">
+      <div class="player-n">Reflection</div>
+      <h3>Estrutura e progresso</h3>
+      <p>Tracking. Dashboard. 100+ programas.</p>
+      <div class="player-fail">Journaling vira performance. Métrica substitui processo.</div>
+    </div>
+    <div class="player">
+      <div class="player-n">Life Note</div>
+      <h3>Sabedoria histórica</h3>
+      <p>1.000+ mentores. Jung, Frankl.</p>
+      <div class="player-fail">Mentor interpreta antes que você chegue.</div>
+    </div>
+  </div>
+
+  <table class="ctable">
+    <thead>
+      <tr>
+        <th>Dimensão</th>
+        <th>Mercado</th>
+        <th>Despertar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Premissa</td>
+        <td>Usuário precisa do que o sistema tem</td>
+        <td>Usuário já tem — precisa ver</td>
+      </tr>
+      <tr>
+        <td>Papel</td>
+        <td>Terapeuta, coach, mentor</td>
+        <td>Espelho</td>
+      </tr>
+      <tr>
+        <td>Entrega</td>
+        <td>Validação, framework, direção</td>
+        <td>Observação e pergunta</td>
+      </tr>
+      <tr>
+        <td>Narrativa</td>
+        <td>Você vira seu histórico</td>
+        <td>Cada relato é lido limpo</td>
+      </tr>
+      <tr>
+        <td>Prescrição</td>
+        <td>Alta — camuflada ou explícita</td>
+        <td><span class="tag-zero">ZERO — REQUISITO ARQUITETURAL</span></td>
+      </tr>
+      <tr>
+        <td>Usuário</td>
+        <td>Quem quer ser guiado</td>
+        <td>Quem está em jornada — quer instrumento sem interferência</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="honest">
+    <p><strong>Uma ressalva honesta:</strong> o espelho nunca é perfeitamente limpo. A IA que o opera tem viés. O que o Despertar faz não é eliminar o viés — é criar restrições explícitas que impedem o viés de se expressar como prescrição, diagnóstico ou identidade.</p>
+    <p>É contenção ativa. O cuidado contínuo com esse risco não é disclaimer. É o trabalho permanente do produto.</p>
+  </div>
+</div>
+
+<!-- PARA QUEM -->
+<div class="s reveal">
+  <div class="s-tag">05 — Para quem</div>
+  <div class="s-title">Não é para todos
+    <em>é para quem já chegou ao ponto onde a resposta pronta atrapalha</em>
+  </div>
+  <p class="b">O Despertar serve quem já desenvolve prática reflexiva — coaching, psicoterapia, meditação — e precisa de instrumento que não interfira nesse processo com interpretação própria.</p>
+
+  <div class="rels">
+    <div class="rel">
+      <div class="rel-k">Para o profissional</div>
+      <div class="rel-v">Complemento não-diretivo entre sessões. O cliente registra e espelha sem que o sistema antecipe a leitura do profissional. O material chega à sessão <strong>mais elaborado, menos filtrado por validação externa.</strong></div>
+    </div>
+    <div class="rel">
+      <div class="rel-k">Para o praticante</div>
+      <div class="rel-v">Instrumento de observação que não substitui a prática — <strong>amplia o espaço entre estímulo e resposta.</strong> A pergunta que o sistema devolve não tem resposta correta.</div>
+    </div>
+    <div class="rel">
+      <div class="rel-k">Posição</div>
+      <div class="rel-v">Não compete com os $6 bilhões. <strong>Serve o usuário que esse mercado não atende.</strong> Não é nicho por limitação. É posição por coerência.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CLOSING -->
+<div class="closing reveal">
+  <div class="closing-q">O espelho<br>não fala.<br><span>Mostra.</span></div>
+  <div class="closing-a">Despertar · v5.7 · 2026</div>
+</div>
+
+<script>
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
