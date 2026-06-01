@@ -921,12 +921,13 @@ const SEED2 = {
 // ════════════════════════════════════════════════════════════════
 
 const DESPERTAR_CONFIG = {
-  versao: { id: 'v5.7', score_base: 100, data: '2026-05-30', historico: [
+  versao: { id: 'v5.8', score_base: 100, data: '2026-06-01', historico: [
     { data: '2026-05-28', mudanca: 'Calibracao Bussola 3 niveis', zona: 'AMARELA', score_antes: 83, score_depois: 99 },
     { data: '2026-05-29', mudanca: 'Auditoria estrutural v5.4', zona: 'VERDE', score_antes: 99, score_depois: 100 },
     { data: '2026-05-30', mudanca: 'Prompt: calibracao de linguagem + nomeie sem avaliar', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
     { data: '2026-05-30', mudanca: 'DB.load: reconciliacao — Supabase prevalece se tiver mais registros', zona: 'VERDE', score_antes: 100, score_depois: 100 },
-    { data: '2026-05-30', mudanca: 'checkOnline consolidado + string versao prompt corrigida', zona: 'VERDE', score_antes: 100, score_depois: 100 }
+    { data: '2026-05-30', mudanca: 'checkOnline consolidado + string versao prompt corrigida', zona: 'VERDE', score_antes: 100, score_depois: 100 },
+    { data: '2026-06-01', mudanca: 'REFLEXAO: estrutura 3 frases diretas + regra de zona em validateChange', zona: 'AMARELA', score_antes: 100, score_depois: null }
   ] },
   bussola: {
     acronimo: 'AMOR',
@@ -969,6 +970,11 @@ function getBussolaText() { return DESPERTAR_CONFIG.bussola.vetores.map(function
 function getBussolaAcronym() { return DESPERTAR_CONFIG.bussola.acronimo; }
 function getPadroesCount() { return DESPERTAR_CONFIG.padroes.length; }
 function getPadroesLabel() { var c=getPadroesCount(); return c===1?'1 padrão':c+' padrões'; }
+// REGRA DE ZONA — aplicar antes de qualquer classificação:
+// Pergunta: "Isso muda o que a IA faz?"
+// Sim → AMARELA no mínimo (requer teste com 5+ relatos antes de produção)
+// Sim + toca em espelho / identidade / prescrição → VERMELHA (requer validação completa 30 casos)
+// Não (layout, sync, estrutura, CSS) → VERDE (pode aplicar direto)
 function validateChange(campo) { var a=[]; DESPERTAR_CONFIG.requisitos.forEach(function(r){if(r.afeta_se.indexOf(campo)>=0)a.push(r);}); var z='VERDE'; a.forEach(function(r){if(r.zona==='VERMELHA')z='VERMELHA'; else if(r.zona==='AMARELA'&&z!=='VERMELHA')z='AMARELA';}); return{zona:z,requisitos:a,campo:campo}; }
 
 
@@ -1261,7 +1267,7 @@ function buildPrompt() {
     '\u2014 Rela\u00e7\u00e3o com reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: perspectiva ampliada\n\n' +
     'INSTRU\u00c7\u00d5ES:\n' +
     '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece", "costuma", "h\u00e1 indica\u00e7\u00e3o". Recorr\u00eancia \u2260 identidade. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos.\n\n' +
-    '2. REFLEX\u00c3O: 3-4 frases. Primeiro: ancora no relato (2 frases que nomeiam a tens\u00e3o real observada, sem explicar causa). Depois: pergunta aberta nascida dessa tens\u00e3o, colorida pela B\u00fassola conforme calibra\u00e7\u00e3o. SE h\u00e1 transforma\u00e7\u00e3o j\u00e1 ocorrida: nomeie o que coexiste antes de perguntar. SE h\u00e1 padr\u00e3o ativo: nomeie o movimento antes de convidar. Tom: Maestria do observador e Olhar sem julgamento como norte. Nunca: tarefa, m\u00e9todo, asseguramento, prescri\u00e7\u00e3o.\n\n' +
+    '2. REFLEX\u00c3O: 3 frases. Frase 1: observa\u00e7\u00e3o factual do que aparece no relato. Frase 2: nomeia a tens\u00e3o real (o que coexiste ou o movimento observado). Frase 3: pergunta direta e simples nascida dessa tens\u00e3o, colorida pela B\u00fassola conforme calibra\u00e7\u00e3o. Nunca: tarefa, m\u00e9todo, asseguramento, prescri\u00e7\u00e3o.\n\n' +
     'PROTE\u00c7\u00d5ES: Padr\u00e3o \u2260 identidade. N\u00e3o celebre progresso. Deixe espa\u00e7o para o usu\u00e1rio reconhecer a origem. B\u00fassola orienta tom, n\u00e3o substitui o que emerge.';
 }
 function copyPrompt() {
