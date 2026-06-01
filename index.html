@@ -77,7 +77,7 @@ window.supabase = {
 </script>
 
 
-<title>Despertar v5.4</title>
+<title>Despertar v5.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -788,7 +788,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
         "Não adianta só compreender na mente.<br>Preciso me experimentar de verdade."
       </div>
       <div style="text-align:center;padding:8px 0 0;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(200,169,110,0.35)">
-        v5.4
+        v5.5
       </div>
 
     </div>
@@ -921,9 +921,12 @@ const SEED2 = {
 // ════════════════════════════════════════════════════════════════
 
 const DESPERTAR_CONFIG = {
-  versao: { id: 'v5.4', score_base: 100, data: '2026-05-29', historico: [
+  versao: { id: 'v5.7', score_base: 100, data: '2026-05-30', historico: [
     { data: '2026-05-28', mudanca: 'Calibracao Bussola 3 niveis', zona: 'AMARELA', score_antes: 83, score_depois: 99 },
-    { data: '2026-05-29', mudanca: 'Auditoria estrutural v5.4', zona: 'VERDE', score_antes: 99, score_depois: 100 }
+    { data: '2026-05-29', mudanca: 'Auditoria estrutural v5.4', zona: 'VERDE', score_antes: 99, score_depois: 100 },
+    { data: '2026-05-30', mudanca: 'Prompt: calibracao de linguagem + nomeie sem avaliar', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
+    { data: '2026-05-30', mudanca: 'DB.load: reconciliacao — Supabase prevalece se tiver mais registros', zona: 'VERDE', score_antes: 100, score_depois: 100 },
+    { data: '2026-05-30', mudanca: 'checkOnline consolidado + string versao prompt corrigida', zona: 'VERDE', score_antes: 100, score_depois: 100 }
   ] },
   bussola: {
     acronimo: 'AMOR',
@@ -1090,6 +1093,7 @@ function checkOnline() {
   } else {
     notice.style.display = 'none';
     setSyncStatus(DB.ready);
+    if (DB.ready) DB.flushQueue();
   }
 }
 window.addEventListener('online',  checkOnline);
@@ -1241,13 +1245,15 @@ function buildPrompt() {
     var sc = dScores[id]||5;
     return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10 \u2014 ' + scoreLabel(sc) + ')';
   }).join('\n');
-  return '[DESPERTAR \u2014 An\u00e1lise v5.3]\n\n' +
+  return '[DESPERTAR \u2014 An\u00e1lise v5.6]\n\n' +
     'Padr\u00f5es presentes:\n' + (arms||'\u2014') + '\n\n' +
     'O que surgiu:\n' + ($('d-situation').value||'\u2014') + '\n\n' +
     'Como me percebi:\n' + ($('d-howfelt').value||'\u2014') + '\n\n' +
     'O que escolho:\n' + ($('d-action').value||'\u2014') + '\n\n' +
     '---\n\n' +
     'SEU PAPEL: Voc\u00ea \u00e9 um espelho \u2014 n\u00e3o conselheiro, terapeuta ou coach. Reflita o que os registros revelam sem diagnosticar, prescrever ou enquadrar em categorias.\n\n' +
+    'LINGUAGEM: Espelhe o vocabul\u00e1rio e a densidade do relato. Se o usu\u00e1rio escreve direto, responda direto. Se escreve com elabora\u00e7\u00e3o, acompanhe. Mantenha gram\u00e1tica e est\u00e9tica \u2014 nunca simplifique a ponto de perder precis\u00e3o.\n\n' +
+    'ESPELHO: Nomeie o que aparece \u2014 nunca avalie o que significa.\n\n' +
     'B\u00daSSOLA (norte): A=Acolhimento sem autopiedade / M=Maestria do observador / O=Olhar sem julgamento / R=Renascimento da ess\u00eancia\n\n' +
     'CALIBRA\u00c7\u00c3O DA B\u00daSSOLA (aplicar silenciosamente \u2014 nunca anunciar):\n' +
     '\u2014 Rela\u00e7\u00e3o com emo\u00e7\u00e3o densa e pouca reflex\u00e3o \u2192 B\u00fassola m\u00ednima: tom neutro, sem perspectiva filos\u00f3fica\n' +
@@ -1936,7 +1942,7 @@ const DB = {
     setSyncStatus(connected);
   },
 
-  // Carrega diary do Supabase (merge com local, sem sobrescrever)
+  // Carrega diary do Supabase (reconciliacao: Supabase prevalece se tiver mais registros)
   load: async function() {
     if (!this.ready) return false;
     var self = this;
@@ -1945,9 +1951,16 @@ const DB = {
       if (result.error) { console.error('DB.load error:', result.error.message); return false; }
       if (!result.data || !result.data.length) return false;
       var remote = result.data.map(function(row){ return self.rowToEntry(row); });
+      // Passo 1: adiciona do remoto o que nao existe local
       remote.forEach(function(entry) {
         if (!diary.find(function(x){ return x.id === entry.id; })) diary.push(entry);
       });
+      // Passo 2: se Supabase tem mais registros de usuario que local, reconstroi base local
+      var userLocal = diary.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; });
+      var userRemote = remote.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; });
+      if (userRemote.length > userLocal.length) {
+        diary = remote.slice();
+      }
       diary.sort(function(a, b){ return b.id - a.id; });
       save('diary');
       return true;
@@ -2111,11 +2124,6 @@ setTimeout(function() {
     DB.notify(false);
   }
 }, 1000);
-
-// Retry automatico ao voltar online
-window.addEventListener('online', function() {
-  if (DB.ready) DB.flushQueue();
-});
 
 </script>
 </body>
