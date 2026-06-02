@@ -77,7 +77,7 @@ window.supabase = {
 </script>
 
 
-<title>Despertar v5.7</title>
+<title>Despertar v5.9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -787,8 +787,8 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
       <div style="text-align:center;padding:16px 0;font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:#c8b89a">
         "Não adianta só compreender na mente.<br>Preciso me experimentar de verdade."
       </div>
-      <div style="text-align:center;padding:8px 0 0;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(200,169,110,0.35)">
-        v5.5
+      <div id="about-version" style="text-align:center;padding:8px 0 0;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#7a6a50">
+        
       </div>
 
     </div>
@@ -1252,7 +1252,7 @@ function buildPrompt() {
     var sc = dScores[id]||5;
     return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10 \u2014 ' + scoreLabel(sc) + ')';
   }).join('\n');
-  return '[DESPERTAR \u2014 An\u00e1lise v5.6]\n\n' +
+  return '[DESPERTAR \u2014 An\u00e1lise v5.9]\n\n' +
     'Padr\u00f5es presentes:\n' + (arms||'\u2014') + '\n\n' +
     'O que surgiu:\n' + ($('d-situation').value||'\u2014') + '\n\n' +
     'Como me percebi:\n' + ($('d-howfelt').value||'\u2014') + '\n\n' +
@@ -1523,6 +1523,7 @@ function renderRefGrid(){
 
 // ─── Update counts ────────────────────────────────────────────
 function renderAll(){
+  var av = $('about-version'); if(av) av.textContent = DESPERTAR_CONFIG.versao.id;
   renderDiaryList(); renderLearnList();
   const allLearnTags=[...new Set(learn.flatMap(e=>e.tags||[]))];
   $('hc-diary-count').textContent=diary.length?`${diary.length} momento${diary.length>1?'s':''}`:' Nenhum momento ainda';
