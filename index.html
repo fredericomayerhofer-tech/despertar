@@ -77,7 +77,7 @@ window.supabase = {
 </script>
 
 
-<title>Despertar v5.10</title>
+<title>Despertar v5.12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -516,19 +516,13 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
           <textarea class="ta" id="d-action" rows="4" placeholder="Escolho: [meu desejo autêntico aqui]&#10;&#10;Ação: [o que faço concretamente]"></textarea>
         </div>
         <div class="section">
-          <div class="lbl">Quais armadilhas estão aqui? <span class="opt">· IA</span></div>
-          <div class="hint">Cole no chat — Claude identifica as 3 armadilhas mais presentes no seu relato</div>
-          <button class="arm-suggest-btn" id="arm-suggest-btn" onclick="copyArmSuggest()">◈ &nbsp;Quais armadilhas estão aqui? (IA)</button>
-        </div>
-
-        <div class="section">
-          <div class="lbl">Que tal se… <span class="opt">· IA</span></div>
-          <div class="hint">Copie o prompt, cole no chat com Claude e receba sua reflexão</div>
-          <button class="sug-btn" id="sug-btn" onclick="copyPrompt()" disabled>✦ &nbsp;Quer uma reflexão da IA?</button>
+          <div class="lbl">Espelho <span class="opt">· IA</span></div>
+          <div class="hint">Copie o prompt, cole no chat com Claude e receba armadilhas + espelho + reflexão</div>
+          <button class="sug-btn" id="sug-btn" onclick="copyPrompt()" disabled>✦ &nbsp;Abrir o Espelho (IA)</button>
           <textarea id="prompt-ta" readonly></textarea>
           <div style="margin-top:14px">
-            <div class="lbl" style="margin-bottom:6px">Cole aqui a sugestão recebida</div>
-            <textarea class="ta" id="d-suggestion" rows="3" placeholder="Cole aqui o 'Que tal se…' que o Claude te retornou..." style="border-style:dashed"></textarea>
+            <div class="lbl" style="margin-bottom:6px">Cole aqui a devolutiva recebida</div>
+            <textarea class="ta" id="d-suggestion" rows="3" placeholder="Cole aqui a devolutiva que o Claude te retornou..." style="border-style:dashed"></textarea>
           </div>
         </div>
         <div class="divider"></div>
@@ -921,7 +915,7 @@ const SEED2 = {
 // ════════════════════════════════════════════════════════════════
 
 const DESPERTAR_CONFIG = {
-  versao: { id: 'v5.10', score_base: 100, data: '2026-06-01', historico: [
+  versao: { id: 'v5.12', score_base: 100, data: '2026-06-01', historico: [
     { data: '2026-05-28', mudanca: 'Calibracao Bussola 3 niveis', zona: 'AMARELA', score_antes: 83, score_depois: 99 },
     { data: '2026-05-29', mudanca: 'Auditoria estrutural v5.4', zona: 'VERDE', score_antes: 99, score_depois: 100 },
     { data: '2026-05-30', mudanca: 'Prompt: calibracao de linguagem + nomeie sem avaliar', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
@@ -929,7 +923,9 @@ const DESPERTAR_CONFIG = {
     { data: '2026-05-30', mudanca: 'checkOnline consolidado + string versao prompt corrigida', zona: 'VERDE', score_antes: 100, score_depois: 100 },
     { data: '2026-06-01', mudanca: 'REFLEXAO: estrutura 3 frases diretas + regra de zona em validateChange', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
     { data: '2026-06-01', mudanca: 'REFLEXAO v5.9: sem qualificar F1 + sem pesar lados + protecao generalizacao usuario F2', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
-    { data: '2026-06-01', mudanca: 'ESPELHO: vocabulario proibido + revelam→contêm em SEU PAPEL', zona: 'AMARELA', score_antes: 100, score_depois: null }
+    { data: '2026-06-01', mudanca: 'ESPELHO: vocabulario proibido + revelam→contêm em SEU PAPEL', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
+    { data: '2026-06-02', mudanca: 'Unificacao prompts: ARMADILHAS + ESPELHO + REFLEXAO num unico botao', zona: 'VERDE', score_antes: 100, score_depois: 100 },
+    { data: '2026-06-02', mudanca: 'REFLEXAO F2: remove coexistencia forcada — descreve o que esta presente conforme aparece', zona: 'AMARELA', score_antes: 100, score_depois: 100 }
   ] },
   bussola: {
     acronimo: 'AMOR',
@@ -1253,7 +1249,8 @@ function buildPrompt() {
     var sc = dScores[id]||5;
     return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10 \u2014 ' + scoreLabel(sc) + ')';
   }).join('\n');
-  return '[DESPERTAR \u2014 An\u00e1lise v5.10]\n\n' +
+  var armList = ARMADILHAS.map(function(a){ return a.id + '. ' + a.label; }).join('\n');
+  return '[DESPERTAR \u2014 An\u00e1lise v5.12]\n\n' +
     'Padr\u00f5es presentes:\n' + (arms||'\u2014') + '\n\n' +
     'O que surgiu:\n' + ($('d-situation').value||'\u2014') + '\n\n' +
     'Como me percebi:\n' + ($('d-howfelt').value||'\u2014') + '\n\n' +
@@ -1268,6 +1265,7 @@ function buildPrompt() {
     '\u2014 Rela\u00e7\u00e3o com questionamento presente \u2192 B\u00fassola moderada: pergunta colorida, sem prescri\u00e7\u00e3o\n' +
     '\u2014 Rela\u00e7\u00e3o com reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: perspectiva ampliada\n\n' +
     'INSTRU\u00c7\u00d5ES:\n' +
+    '0. ARMADILHAS: Com base neste relato, identifique as 3 armadilhas mais presentes entre as 10 abaixo. Responda com n\u00famero, nome e uma linha explicando por que aparece neste relato. Sem introdu\u00e7\u00e3o, sem julgamento.\n' + armList + '\n\n' +
     '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece", "costuma", "h\u00e1 indica\u00e7\u00e3o". Recorr\u00eancia \u2260 identidade. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos. EVITE linguagem anal\u00edtica ou diagn\u00f3stica — exemplos: "revela", "o padr\u00e3o que aparece \u00e9", "estruturalmente", "fica claro que", "em ess\u00eancia", "no fundo", "trata-se de", "\u00e9 um padr\u00e3o de", "o que isso mostra". Evite tamb\u00e9m qualquer outra express\u00e3o que conclua significado, classifique ou resuma o que o relato \u00e9.\n\n' +
     '2. REFLEX\u00c3O: 3 frases. Frase 1: observa\u00e7\u00e3o factual do que aparece no relato — sem qualificar (n\u00e3o "decis\u00e3o clara", mas "decis\u00e3o tomada"). Frase 2: nomeia o que coexiste sem pesar os lados — sem generalizar padr\u00e3o como tra\u00e7o; se o usu\u00e1rio generalizou sobre si mesmo, nomeie o que apareceu neste momento, n\u00e3o repita a generaliza\u00e7\u00e3o. Frase 3: pergunta direta e simples nascida dessa tens\u00e3o, colorida pela B\u00fassola conforme calibra\u00e7\u00e3o. Nunca: tarefa, m\u00e9todo, asseguramento, prescri\u00e7\u00e3o, qualifica\u00e7\u00e3o, generaliza\u00e7\u00e3o de padr\u00e3o como tra\u00e7o.\n\n' +
     'PROTE\u00c7\u00d5ES: Padr\u00e3o \u2260 identidade. N\u00e3o celebre progresso. Deixe espa\u00e7o para o usu\u00e1rio reconhecer a origem. B\u00fassola orienta tom, n\u00e3o substitui o que emerge.';
