@@ -503,7 +503,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
         <div class="section">
           <div class="lbl">O que surgiu? <span class="req">*</span></div>
           <div class="hint">Situação, contexto, pessoa envolvida · <span style="color:#c8a96e">use o 🎤 do teclado para ditar</span></div>
-          <textarea class="ta" id="d-situation" rows="4" placeholder="O que surgiu — situação, contexto, pessoa envolvida..."></textarea>
+          <textarea class="ta" id="d-situation" rows="4" placeholder="O que surgiu — situação, contexto, pessoa envolvida..." oninput="updateSugBtn()"></textarea>
         </div>
         <div class="section">
           <div class="lbl">Como me percebi?</div>
@@ -1301,7 +1301,7 @@ function buildPrompt() {
 
 // ─── API Anthropic ────────────────────────────────────────────
 async function callAnthropicAPI(prompt) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+  const response = await fetch("https://despertar-anthropic-proxy.frederico-mayerhofer.workers.dev", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
