@@ -939,6 +939,7 @@ const DESPERTAR_CONFIG = {
     { data: '2026-06-02', mudanca: 'REFLEXAO F2: remove coexistencia forcada — descreve o que esta presente conforme aparece', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
     { data: '2026-06-04', mudanca: 'v6: API direta (sem copy/paste), segunda rodada, faxina codigo', zona: 'VERDE', score_antes: 100, score_depois: 100 },
     { data: '2026-06-04', mudanca: 'v6.1: vocabulario (estados presentes, refletir, seu presente), persistencia segunda rodada', zona: 'VERDE', score_antes: 100, score_depois: 100 }
+    ,{ data: '2026-06-08', mudanca: 'v6.3: lista estados mentais revisada — homogeneizacao ontologica (Dispenza/Plutchik/Brown)', zona: 'VERDE', score_antes: 100, score_depois: 100 }
   ] },
   bussola: {
     acronimo: 'AMOR',
@@ -951,15 +952,17 @@ const DESPERTAR_CONFIG = {
   },
   padroes: [
     {id:1,label:"Culpa e arrependimento"},
-    {id:2,label:"Necessidade de aprovação e reconhecimento"},
+    {id:2,label:"Insegurança e necessidade de validação"},
     {id:3,label:"Vergonha e indignidade"},
     {id:4,label:"Medo e ansiedade"},
     {id:5,label:"Inveja e ressentimento"},
-    {id:6,label:"Reatividade emocional e impulsividade"},
-    {id:7,label:"Resistência, negação e arrogância"},
-    {id:8,label:"Preocupação e bloqueios materiais"},
-    {id:9,label:"Bloqueios relacionais e carência"},
-    {id:10,label:"Vitimização e queixa"}
+    {id:6,label:"Raiva e reatividade"},
+    {id:7,label:"Resistência e negação"},
+    {id:8,label:"Preocupação e escassez"},
+    {id:9,label:"Solidão e carência"},
+    {id:10,label:"Impotência e sensação de injustiça"},
+    {id:11,label:"Apego e dificuldade de soltar"},
+    {id:12,label:"Necessidade de controle"}
   ],
   requisitos: [
     { id: 1, nome: 'Espelho honesto', zona: 'AMARELA', afeta_se: ['bussola','prompt_analise'] },
@@ -1294,7 +1297,7 @@ function buildPrompt() {
     '\u2014 Rela\u00e7\u00e3o com reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: perspectiva ampliada\n\n' +
     'INSTRU\u00c7\u00d5ES:\n' +
     '0. ESTADOS PRESENTES: Com base neste relato, identifique as 3 estados mais presentes entre as 10 abaixo. Responda com n\u00famero, nome e uma linha explicando por que aparece neste relato. Sem introdu\u00e7\u00e3o, sem julgamento.\n' + armList + '\n\n' +
-    '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece", "costuma", "h\u00e1 indica\u00e7\u00e3o". Recorr\u00eancia \u2260 identidade. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos. EVITE linguagem anal\u00edtica ou diagn\u00f3stica — exemplos: "revela", "o padr\u00e3o que aparece \u00e9", "estruturalmente", "fica claro que", "em ess\u00eancia", "no fundo", "trata-se de", "\u00e9 um padr\u00e3o de", "o que isso mostra". Evite tamb\u00e9m qualquer outra express\u00e3o que conclua significado, classifique ou resuma o que o relato \u00e9.\n\n' +
+    '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece" e "h\u00e1 indica\u00e7\u00e3o de" para descrever o que o momento revela. NUNCA use "costuma" \u2014 implica recorr\u00eancia que um \u00fanico relato n\u00e3o sustenta. Se o usu\u00e1rio usou "toda vez", "sempre", "costumo": nomeie o que apareceu NESTE momento \u2014 n\u00e3o repita a generaliza\u00e7\u00e3o como fato estabelecido. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos. EVITE linguagem anal\u00edtica ou diagn\u00f3stica — exemplos: "revela", "o padr\u00e3o que aparece \u00e9", "estruturalmente", "fica claro que", "em ess\u00eancia", "no fundo", "trata-se de", "\u00e9 um padr\u00e3o de", "o que isso mostra". Evite tamb\u00e9m qualquer outra express\u00e3o que conclua significado, classifique ou resuma o que o relato \u00e9.\n\n' +
     '2. REFLETIR: 3 frases. Frase 1: observa\u00e7\u00e3o factual do que aparece no relato — sem qualificar (n\u00e3o "decis\u00e3o clara", mas "decis\u00e3o tomada"). Frase 2: descreve o que est\u00e1 presente no relato — uma coisa, duas, tens\u00e3o ou vazio, conforme o que aparece. Sem impor estrutura de coexist\u00eancia. Sem pesar os lados. Sem generalizar padr\u00e3o como tra\u00e7o; se o usu\u00e1rio generalizou sobre si mesmo, nomeie o que apareceu neste momento, n\u00e3o repita a generaliza\u00e7\u00e3o. Frase 3: pergunta direta e simples nascida dessa tens\u00e3o, colorida pela B\u00fassola conforme calibra\u00e7\u00e3o. Nunca: tarefa, m\u00e9todo, asseguramento, prescri\u00e7\u00e3o, qualifica\u00e7\u00e3o, generaliza\u00e7\u00e3o de padr\u00e3o como tra\u00e7o.\n\n' +
     'PROTE\u00c7\u00d5ES: Padr\u00e3o \u2260 identidade. N\u00e3o celebre progresso. Deixe espa\u00e7o para o usu\u00e1rio reconhecer a origem. B\u00fassola orienta tom, n\u00e3o substitui o que emerge.';
 }
