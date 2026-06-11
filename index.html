@@ -77,7 +77,7 @@ window.supabase = {
 </script>
 
 
-<title>Despertar v6.1</title>
+<title>Despertar v6.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -195,7 +195,7 @@ input.inp:focus{border-color:rgba(139,90,43,0.4)}
 /* Suggest button */
 .sug-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(100,80,160,0.03);border:1px dashed rgba(100,80,160,0.22);color:#6450a0;padding:12px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s;width:100%;font-family:'Lato',sans-serif}
 .sug-btn:hover{background:rgba(100,80,160,0.07);border-color:rgba(100,80,160,0.3)}
-.sug-btn.copied{background:rgba(80,120,80,0.06);border-color:rgba(80,120,80,0.25);color:#3a6a3a}
+.sug-btn
 .sug-btn:disabled{opacity:0.45;cursor:not-allowed}
 .sug-box{background:rgba(100,80,160,0.04);border:1px solid rgba(100,80,160,0.13);border-radius:10px;padding:16px 18px;margin-top:10px}
 .sug-star{font-size:14px;color:#9070c0;margin-bottom:7px}
@@ -221,7 +221,7 @@ input.inp:focus{border-color:rgba(139,90,43,0.4)}
 .d-lbl{font-size:9px;letter-spacing:0.13em;text-transform:uppercase;color:#a07850;margin-bottom:5px}
 .d-txt{font-size:15px;line-height:1.75;color:#1e0e04;font-family:'Cormorant Garamond',serif}
 .delete-btn{background:transparent;border:1px solid rgba(180,60,40,0.18);color:#b04030;padding:9px 16px;border-radius:6px;font-size:11px;cursor:pointer;margin-top:8px;font-family:'Lato',sans-serif;letter-spacing:0.04em}
-.edit-btn{background:transparent;border:1px solid rgba(139,90,43,0.22);color:#8b5a2b;padding:9px 16px;border-radius:6px;font-size:11px;cursor:pointer;margin-top:8px;margin-right:8px;font-family:'Lato',sans-serif;letter-spacing:0.04em}
+
 
 /* Learn */
 .l-card{background:rgba(240,250,240,0.65);border:1px solid rgba(80,120,80,0.12);border-radius:10px;padding:16px 18px;cursor:pointer;transition:all 0.2s}
@@ -274,11 +274,11 @@ textarea.bl-ta{width:100%;background:rgba(245,235,215,0.94);border:1px solid rgb
 textarea.bl-ta:focus{outline:none;border-color:rgba(139,90,43,0.35)}
 
 /* Export/Import bar */
-.data-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-.data-btn{flex:1;min-width:120px;padding:10px;border-radius:7px;font-size:12px;font-family:'Lato',sans-serif;cursor:pointer;letter-spacing:0.04em;transition:all 0.2s;text-align:center}
-.data-btn.export{background:rgba(139,90,43,0.08);border:1px solid rgba(139,90,43,0.2);color:#3a2008}
+
+
+.data-btn
 .data-btn.export:hover{background:rgba(139,90,43,0.15)}
-.data-btn.import{background:rgba(80,120,80,0.08);border:1px solid rgba(80,120,80,0.2);color:#2a5a2a}
+.data-btn
 .data-btn.import:hover{background:rgba(80,120,80,0.15)}
 
 /* Prompt hidden */
@@ -311,7 +311,7 @@ textarea.bl-ta:focus{outline:none;border-color:rgba(139,90,43,0.35)}
 .ia-note{font-size:11px;color:#a07850;font-style:italic;text-align:center;line-height:1.6;margin-bottom:14px;padding:0 8px}
 
 /* Arm suggest */
-.arm-suggest-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(139,90,43,0.04);border:1px dashed rgba(139,90,43,0.22);color:#8b5a2b;padding:11px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s;width:100%;font-family:'Lato',sans-serif;margin-top:6px}
+
 /* Safe area — iPhone notch / Dynamic Island */
 #header{padding-top:env(safe-area-inset-top,0px)}
 body{padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -926,21 +926,7 @@ const SEED2 = {
 // ════════════════════════════════════════════════════════════════
 
 const DESPERTAR_CONFIG = {
-  versao: { id: 'v6.1', score_base: 100, data: '2026-06-01', historico: [
-    { data: '2026-05-28', mudanca: 'Calibracao Bussola 3 niveis', zona: 'AMARELA', score_antes: 83, score_depois: 99 },
-    { data: '2026-05-29', mudanca: 'Auditoria estrutural v5.4', zona: 'VERDE', score_antes: 99, score_depois: 100 },
-    { data: '2026-05-30', mudanca: 'Prompt: calibracao de linguagem + nomeie sem avaliar', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
-    { data: '2026-05-30', mudanca: 'DB.load: reconciliacao — Supabase prevalece se tiver mais registros', zona: 'VERDE', score_antes: 100, score_depois: 100 },
-    { data: '2026-05-30', mudanca: 'checkOnline consolidado + string versao prompt corrigida', zona: 'VERDE', score_antes: 100, score_depois: 100 },
-    { data: '2026-06-01', mudanca: 'REFLEXAO: estrutura 3 frases diretas + regra de zona em validateChange', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
-    { data: '2026-06-01', mudanca: 'REFLEXAO v5.9: sem qualificar F1 + sem pesar lados + protecao generalizacao usuario F2', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
-    { data: '2026-06-01', mudanca: 'ESPELHO: vocabulario proibido + revelam→contêm em SEU PAPEL', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
-    { data: '2026-06-02', mudanca: 'Unificacao prompts: ARMADILHAS + ESPELHO + REFLEXAO num unico botao', zona: 'VERDE', score_antes: 100, score_depois: 100 },
-    { data: '2026-06-02', mudanca: 'REFLEXAO F2: remove coexistencia forcada — descreve o que esta presente conforme aparece', zona: 'AMARELA', score_antes: 100, score_depois: 100 },
-    { data: '2026-06-04', mudanca: 'v6: API direta (sem copy/paste), segunda rodada, faxina codigo', zona: 'VERDE', score_antes: 100, score_depois: 100 },
-    { data: '2026-06-04', mudanca: 'v6.1: vocabulario (estados presentes, refletir, seu presente), persistencia segunda rodada', zona: 'VERDE', score_antes: 100, score_depois: 100 }
-    ,{ data: '2026-06-08', mudanca: 'v6.3: lista estados mentais revisada — homogeneizacao ontologica (Dispenza/Plutchik/Brown)', zona: 'VERDE', score_antes: 100, score_depois: 100 }
-  ] },
+  versao: { id: 'v6.3', data: '2026-06-11' },
   bussola: {
     acronimo: 'AMOR',
     vetores: [
@@ -979,8 +965,6 @@ const DESPERTAR_CONFIG = {
   ]
 };
 const ARMADILHAS = DESPERTAR_CONFIG.padroes;
-
-function getPadroesCount() { return DESPERTAR_CONFIG.padroes.length; }
 // REGRA DE ZONA — aplicar antes de qualquer classificação:
 // Pergunta: "Isso muda o que a IA faz?"
 // Sim → AMARELA no mínimo (requer teste com 5+ relatos antes de produção)
@@ -1278,28 +1262,28 @@ function buildPrompt() {
   var arms = (dSelectedItems||[]).map(function(id){
     var a = ARMADILHAS.find(function(x){ return x.id===id; });
     var sc = dScores[id]||5;
-    return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10 \u2014 ' + scoreLabel(sc) + ')';
+    return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10, ' + scoreLabel(sc) + ')';
   }).join('\n');
   var armList = ARMADILHAS.map(function(a){ return a.id + '. ' + a.label; }).join('\n');
-  return '[DESPERTAR \u2014 An\u00e1lise v6.1]\n\n' +
+  return '[DESPERTAR | An\u00e1lise v6.3]\n\n' +
     'Padr\u00f5es presentes:\n' + (arms||'\u2014') + '\n\n' +
     'O que surgiu:\n' + ($('d-situation').value||'\u2014') + '\n\n' +
     'Como me percebi:\n' + ($('d-howfelt').value||'\u2014') + '\n\n' +
     'O que escolho:\n' + ($('d-action').value||'\u2014') + '\n\n' +
     '---\n\n' +
-    'SEU PAPEL: Voc\u00ea \u00e9 um espelho \u2014 n\u00e3o conselheiro, terapeuta ou coach. Reflita o que os registros contêm sem diagnosticar, prescrever ou enquadrar em categorias.\n\n' +
-    'LINGUAGEM: Frases diretas, vocabul\u00e1rio cotidiano. Evite constru\u00e7\u00f5es invertidas, nominaliza\u00e7\u00f5es e palavras de baixa frequ\u00eancia. Prefira a forma mais simples de dizer a mesma coisa. NUNCA use travess\u00e3o (\u2014) ou h\u00edfen como recurso de estilo \u2014 substitua por v\u00edrgula, ponto ou reescreva a frase.\n\n' +
-    'ESPELHO: Nomeie o que aparece \u2014 nunca avalie o que significa.\n\n' +
+    'SEU PAPEL: Voc\u00ea \u00e9 um espelho, n\u00e3o conselheiro, terapeuta ou coach. Reflita o que os registros contêm sem diagnosticar, prescrever ou enquadrar em categorias.\n\n' +
+    'LINGUAGEM: Frases diretas, vocabul\u00e1rio cotidiano. Evite constru\u00e7\u00f5es invertidas, nominaliza\u00e7\u00f5es e palavras de baixa frequ\u00eancia. Prefira a forma mais simples de dizer a mesma coisa. NUNCA use travess\u00e3o (\u2014) ou h\u00edfen como recurso de estilo. Substitua por v\u00edrgula, ponto ou reescreva a frase.\n\n' +
+    'ESPELHO: Nomeie o que aparece, nunca avalie o que significa.\n\n' +
     'B\u00daSSOLA (norte): A=Acolhimento sem autopiedade / M=Maestria do observador / O=Olhar sem julgamento / R=Renascimento da ess\u00eancia\n\n' +
-    'CALIBRA\u00c7\u00c3O DA B\u00daSSOLA (aplicar silenciosamente \u2014 nunca anunciar):\n' +
-    '\u2014 Rela\u00e7\u00e3o com emo\u00e7\u00e3o densa e pouca reflex\u00e3o \u2192 B\u00fassola m\u00ednima: tom neutro, sem perspectiva filos\u00f3fica\n' +
-    '\u2014 Rela\u00e7\u00e3o com questionamento presente \u2192 B\u00fassola moderada: pergunta colorida, sem prescri\u00e7\u00e3o\n' +
-    '\u2014 Rela\u00e7\u00e3o com reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: perspectiva ampliada\n\n' +
+    'CALIBRA\u00c7\u00c3O DA B\u00daSSOLA (aplicar silenciosamente, nunca anunciar):\n' +
+    'Quando h\u00e1 emo\u00e7\u00e3o densa e pouca reflex\u00e3o \u2192 B\u00fassola m\u00ednima: tom neutro, sem perspectiva filos\u00f3fica\n' +
+    'Quando h\u00e1 questionamento presente \u2192 B\u00fassola moderada: pergunta colorida, sem prescri\u00e7\u00e3o\n' +
+    'Quando h\u00e1 reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: perspectiva ampliada\n\n' +
     'INSTRU\u00c7\u00d5ES:\n' +
-    '0. ESTADOS PRESENTES: Com base neste relato, identifique as 3 estados mais presentes entre as 10 abaixo. Responda com n\u00famero, nome e uma linha explicando por que aparece neste relato. Sem introdu\u00e7\u00e3o, sem julgamento.\n' + armList + '\n\n' +
-    '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece" e "h\u00e1 indica\u00e7\u00e3o de" para descrever o que o momento revela. NUNCA use "costuma" \u2014 implica recorr\u00eancia que um \u00fanico relato n\u00e3o sustenta. Se o usu\u00e1rio usou "toda vez", "sempre", "costumo": nomeie o que apareceu NESTE momento \u2014 n\u00e3o repita a generaliza\u00e7\u00e3o como fato estabelecido. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos. EVITE linguagem anal\u00edtica ou diagn\u00f3stica — exemplos: "revela", "o padr\u00e3o que aparece \u00e9", "estruturalmente", "fica claro que", "em ess\u00eancia", "no fundo", "trata-se de", "\u00e9 um padr\u00e3o de", "o que isso mostra". Evite tamb\u00e9m qualquer outra express\u00e3o que conclua significado, classifique ou resuma o que o relato \u00e9.\n\n' +
-    '2. REFLETIR: 3 frases. Frase 1: observa\u00e7\u00e3o factual do que aparece no relato — sem qualificar (n\u00e3o "decis\u00e3o clara", mas "decis\u00e3o tomada"). Frase 2: descreve o que est\u00e1 presente no relato — uma coisa, duas, tens\u00e3o ou vazio, conforme o que aparece. Sem impor estrutura de coexist\u00eancia. Sem pesar os lados. Sem generalizar padr\u00e3o como tra\u00e7o; se o usu\u00e1rio generalizou sobre si mesmo, nomeie o que apareceu neste momento, n\u00e3o repita a generaliza\u00e7\u00e3o. Frase 3: pergunta direta e simples nascida dessa tens\u00e3o, colorida pela B\u00fassola conforme calibra\u00e7\u00e3o. Nunca: tarefa, m\u00e9todo, asseguramento, prescri\u00e7\u00e3o, qualifica\u00e7\u00e3o, generaliza\u00e7\u00e3o de padr\u00e3o como tra\u00e7o.\n\n' +
-    'PROTE\u00c7\u00d5ES: Padr\u00e3o \u2260 identidade. N\u00e3o celebre progresso. Deixe espa\u00e7o para o usu\u00e1rio reconhecer a origem. B\u00fassola orienta tom, n\u00e3o substitui o que emerge.';
+    '0. ESTADOS PRESENTES: Com base neste relato, identifique at\u00e9 3 estados que realmente aparecem. Se apenas 1 ou 2 aparecem, liste s\u00f3 esses. Responda com n\u00famero, nome e uma linha explicando por que aparece neste relato. Sem introdu\u00e7\u00e3o, sem julgamento.\n' + armList + '\n\n' +
+    '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece" e "h\u00e1 indica\u00e7\u00e3o de" para descrever o que o momento revela. NUNCA use "costuma", implica recorr\u00eancia que um \u00fanico relato n\u00e3o sustenta. Se o usu\u00e1rio usou "toda vez", "sempre", "costumo": nomeie o que apareceu NESTE momento, n\u00e3o repita a generaliza\u00e7\u00e3o como fato estabelecido. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos. EVITE linguagem anal\u00edtica ou diagn\u00f3stica, exemplos: "revela", "o padr\u00e3o que aparece \u00e9", "estruturalmente", "fica claro que", "em ess\u00eancia", "no fundo", "trata-se de", "\u00e9 um padr\u00e3o de", "o que isso mostra". Evite tamb\u00e9m qualquer outra express\u00e3o que conclua significado, classifique ou resuma o que o relato \u00e9.\n\n' +
+    '2. REFLETIR: 3 frases. Frase 1: observa\u00e7\u00e3o factual do que aparece no relato, sem qualificar (n\u00e3o "decis\u00e3o clara", mas "decis\u00e3o tomada"). Frase 2: descreve o que est\u00e1 presente no relato: uma coisa, duas, tens\u00e3o ou vazio, conforme o que aparece. Sem impor estrutura de coexist\u00eancia. Sem pesar os lados. Sem generalizar padr\u00e3o como tra\u00e7o; se o usu\u00e1rio generalizou sobre si mesmo, nomeie o que apareceu neste momento, n\u00e3o repita a generaliza\u00e7\u00e3o. Frase 3: pergunta direta e simples nascida da tens\u00e3o emocional presente no relato, colorida pela B\u00fassola conforme calibra\u00e7\u00e3o. A pergunta abre, nunca estreita. N\u00e3o pede explica\u00e7\u00e3o de evento. N\u00e3o oferece caminhos impl\u00edcitos. Se o relato n\u00e3o apresenta tens\u00e3o clara, a pergunta nasce de uma coexist\u00eancia presente ou de algo que ficou sem nome. Nunca force tens\u00e3o onde o relato n\u00e3o a cont\u00e9m. Nunca: tarefa, m\u00e9todo, prescri\u00e7\u00e3o, generaliza\u00e7\u00e3o de padr\u00e3o como tra\u00e7o.\n\n' +
+    'PROTE\u00c7\u00d5ES: Padr\u00e3o n\u00e3o \u00e9 identidade. N\u00e3o celebre progresso. Deixe espa\u00e7o para o usu\u00e1rio reconhecer a origem. B\u00fassola orienta tom, n\u00e3o substitui o que emerge.';
 }
 
 // ─── API Anthropic ────────────────────────────────────────────
@@ -1336,22 +1320,23 @@ async function callEspelhoFirst() {
 }
 
 function buildSegundaRodadaPrompt() {
-  return '[DESPERTAR \u2014 Segunda Rodada]\n\n' +
+  return '[DESPERTAR | Segunda Rodada]\n\n' +
     'RELATO ORIGINAL:\n' +
     'Situa\u00e7\u00e3o: ' + $('d-situation').value.trim() + '\n' +
     'Como me percebi: ' + $('d-howfelt').value.trim() + '\n' +
     'O que escolho: ' + $('d-action').value.trim() + '\n\n' +
     'PRIMEIRA DEVOLUTIVA:\n' + $('d-suggestion').value.trim() + '\n\n' +
     'RESPOSTA DO USU\u00c1RIO:\n' + $('d-resposta-2').value.trim() + '\n\n---\n\n' +
-    'SEU PAPEL: Voc\u00ea \u00e9 um espelho \u2014 n\u00e3o conselheiro, terapeuta ou coach.\n\n' +
-    'REGRA CENTRAL: Ancore no vocabul\u00e1rio da RESPOSTA DO USU\u00c1RIO. Use o relato original apenas como contexto silencioso \u2014 nunca para corrigir, expandir ou contrastar o que o usu\u00e1rio trouxe na reflex\u00e3o. N\u00e3o complete nem infira estrutura al\u00e9m do que foi trazido na resposta. Se a resposta for curta, devolva o pr\u00f3prio vocabul\u00e1rio do usu\u00e1rio \u2014 sem acrescentar distin\u00e7\u00f5es pr\u00f3prias.\n\n' +
-    'B\u00daSSO: A=Acolhimento sem autopiedade / M=Maestria do observador / O=Olhar sem julgamento / R=Renascimento da ess\u00eancia\n\n' +
-    'CALIBRA\u00c7\u00c3O (aplicar silenciosamente \u2014 nunca anunciar):\n' +
-    '\u2014 Resposta densa e emocional \u2192 B\u00fassola m\u00ednima: tom neutro\n' +
-    '\u2014 Resposta com questionamento \u2192 B\u00fassola moderada: pergunta colorida\n' +
-    '\u2014 Resposta com reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: O + M priorit\u00e1rios, verbo observa, dist\u00e2ncia\n\n' +
-    'FORMATO: M\u00e1ximo 3\u20134 frases + pergunta. Pergunta nasce da tens\u00e3o real \u2014 n\u00e3o de m\u00e9todo, n\u00e3o de prescri\u00e7\u00e3o. ' +
-    'B\u00fassola presente no verbo e na dire\u00e7\u00e3o \u2014 nunca anunciada.\n\n' +
+    'SEU PAPEL: Voc\u00ea \u00e9 um espelho, n\u00e3o conselheiro, terapeuta ou coach.\n\n' +
+    'LINGUAGEM: Frases diretas, vocabul\u00e1rio cotidiano. Sem constru\u00e7\u00f5es invertidas ou palavras de baixa frequ\u00eancia. NUNCA use travess\u00e3o ou h\u00edfen como recurso de estilo.\n\n' +
+    'REGRA CENTRAL: Ancore no vocabul\u00e1rio da RESPOSTA DO USU\u00c1RIO. Use o relato original apenas como contexto silencioso, nunca para corrigir, expandir ou contrastar o que o usu\u00e1rio trouxe na reflex\u00e3o. N\u00e3o complete nem infira estrutura al\u00e9m do que foi trazido na resposta. Se a resposta for curta, devolva o pr\u00f3prio vocabul\u00e1rio do usu\u00e1rio, sem acrescentar distin\u00e7\u00f5es pr\u00f3prias.\n\n' +
+    'B\u00daSSOLA: A=Acolhimento sem autopiedade / M=Maestria do observador / O=Olhar sem julgamento / R=Renascimento da ess\u00eancia\n\n' +
+    'CALIBRA\u00c7\u00c3O (aplicar silenciosamente, nunca anunciar):\n' +
+    'Quando resposta densa e emocional \u2192 B\u00fassola m\u00ednima: tom neutro\n' +
+    'Quando resposta com questionamento \u2192 B\u00fassola moderada: pergunta colorida\n' +
+    'Quando resposta com reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: O + M priorit\u00e1rios, verbo observa, dist\u00e2ncia\n\n' +
+    'FORMATO: M\u00e1ximo 3 a 4 frases + pergunta. Pergunta nasce da tens\u00e3o real, n\u00e3o de m\u00e9todo, n\u00e3o de prescri\u00e7\u00e3o. ' +
+    'B\u00fassola presente no verbo e na dire\u00e7\u00e3o, nunca anunciada.\n\n' +
     'NUNCA: diagn\u00f3stico, completar o que o usu\u00e1rio trouxe, inferir estrutura al\u00e9m do relato, validar elabora\u00e7\u00e3o anterior, prescrever.';
 }
 
@@ -1613,42 +1598,7 @@ function renderAll(){
 // ─── Escape HTML ──────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');}
 
-function buildArmSuggestPrompt() {
-  var situation = $('d-situation').value.trim();
-  var howFelt   = $('d-howfelt').value.trim();
-  var action = $('d-action').value.trim();
-  var arms = (dSelectedItems||[]).map(function(id){
-    var a = ARMADILHAS.find(function(x){ return x.id===id; });
-    var sc = dScores[id]||5;
-    return '  * ' + (a?a.label:id) + ' (score ' + sc + '/10)';
-  }).join('\n');
-  return '[DESPERTAR \u2014 Sugestão de armadilhas]\n\n' +
-    'Sou o usuário de um diário de autoconhecimento baseado em 10 armadilhas mentais:\n' +
-    ARMADILHAS.map(function(a){ return a.id + '. ' + a.label; }).join('\n') + '\n\n' +
-    'Preenchi o seguinte momento:\n\n' +
-    'Padrões presentes:\n' + (arms||'—') + '\n\n' +
-    'O que surgiu: ' + (situation||'—') + '\n' +
-    'Como me percebi: ' + (howFelt||'—') + '\n' +
-    'O que escolho: ' + (action||'—') + '\n\n' +
-    'Com base neste relato, quais são as 3 armadilhas mais presentes? Responda apenas com:\n' +
-    '- Os números e nomes das 3 armadilhas em ordem de relevância\n' +
-    '- Uma linha explicando por que cada uma aparece neste relato\n' +
-    'Sem introdução, sem julgamento, direto ao ponto.';
-}
 
-function copyArmSuggest() {
-  var prompt = buildArmSuggestPrompt();
-  $('prompt-ta').value = prompt;
-  var btn = $('arm-suggest-btn');
-  var copy = function() {
-    btn.classList.add('copied');
-    btn.textContent = '✓  Prompt copiado! Cole no chat →';
-    setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML='◈ &nbsp;Quais armadilhas estão aqui? (IA)'; }, 2500);
-  };
-  if(navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(prompt).then(copy).catch(function(){ $('prompt-ta').select(); document.execCommand('copy'); copy(); });
-  } else { $('prompt-ta').select(); document.execCommand('copy'); copy(); }
-}
 
 // ─── Analyses (Minha Jornada) ─────────────────────────────────
 function showAnalysesList() {
