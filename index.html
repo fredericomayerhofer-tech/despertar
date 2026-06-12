@@ -2027,7 +2027,9 @@ const DB = {
     setSyncStatus(connected);
   },
 
-  // Carrega diary do Supabase (reconciliacao: Supabase prevalece se tiver mais registros)
+  // Carrega diary do Supabase — Supabase e sempre fonte de verdade.
+  // Reconstroi diary local integralmente a partir do remoto.
+  // Preserva SEEDs. Chamado APOS flushQueue no boot.
   load: async function() {
     if (!this.ready) return false;
     var self = this;
@@ -2036,16 +2038,10 @@ const DB = {
       if (result.error) { console.error('DB.load error:', result.error.message); return false; }
       if (!result.data || !result.data.length) return false;
       var remote = result.data.map(function(row){ return self.rowToEntry(row); });
-      // Passo 1: adiciona do remoto o que nao existe local
-      remote.forEach(function(entry) {
-        if (!diary.find(function(x){ return x.id === entry.id; })) diary.push(entry);
-      });
-      // Passo 2: se Supabase tem mais registros de usuario que local, reconstroi base local
-      var userLocal = diary.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; });
-      var userRemote = remote.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; });
-      if (userRemote.length > userLocal.length) {
-        diary = remote.slice();
-      }
+      // Supabase e fonte de verdade — reconstroi diary local
+      // Preserva SEEDs (nao vivem no Supabase)
+      var seeds = diary.filter(function(e){ return e.id === SEED.id || e.id === SEED2.id; });
+      diary = seeds.concat(remote.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; }));
       diary.sort(function(a, b){ return b.id - a.id; });
       save('diary');
       return true;
@@ -2099,9 +2095,12 @@ const DB = {
   },
 
   enqueue: function(entry) {
+    // Salva conteudo completo na fila — nao so o ID.
+    // Protege contra perda de dados se localStorage for limpo (iOS flash memory).
     var q = this.getQueue();
-    if (q.indexOf(entry.id) < 0) {
-      q.push(entry.id);
+    var exists = q.find(function(item){ return item.id === entry.id; });
+    if (!exists) {
+      q.push(entry);
       this.setQueue(q);
       console.log('DB.enqueue: relato ' + entry.id + ' na fila (' + q.length + ' pendente(s))');
     }
@@ -2114,13 +2113,14 @@ const DB = {
     console.log('DB.flushQueue: tentando sincronizar ' + q.length + ' relato(s) pendente(s)');
     var stillPending = [];
     for (var i = 0; i < q.length; i++) {
-      var id = q[i];
-      var entry = diary.find(function(x){ return x.id === id; });
-      if (!entry) continue; // relato foi apagado localmente
+      // Suporta fila com conteudo completo (novo) e fila com IDs (legado)
+      var item = q[i];
+      var entry = (typeof item === 'object') ? item : diary.find(function(x){ return x.id === item; });
+      if (!entry) continue;
       try {
         var result = await this.client.from('diary').upsert(this.entryToRow(entry), { onConflict: 'id' });
-        if (result.error) { stillPending.push(id); }
-      } catch(e) { stillPending.push(id); }
+        if (result.error) { stillPending.push(item); }
+      } catch(e) { stillPending.push(item); }
     }
     this.setQueue(stillPending);
     if (stillPending.length === 0) {
@@ -2197,13 +2197,14 @@ renderAll();
 checkOnline();
 
 // Supabase: inicializa apos biblioteca CDN carregar
+// Ordem: flushQueue (pendentes offline) → load (Supabase fonte de verdade) → renderAll
 setTimeout(function() {
   if (DB.init()) {
     DB.notify(true);
-    DB.load().then(function(loaded) {
-      if (loaded) renderAll();
-      // Processa fila pendente apos boot
-      DB.flushQueue();
+    DB.flushQueue().then(function() {
+      DB.load().then(function(loaded) {
+        if (loaded) renderAll();
+      });
     });
   } else {
     DB.notify(false);
