@@ -182,7 +182,7 @@ input.inp:focus{border-color:rgba(139,90,43,0.4)}
 .save-btn:disabled{opacity:0.4;cursor:not-allowed}
 
 /* Suggest button */
-.sug-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(100,80,160,0.03);border:1px dashed rgba(100,80,160,0.22);color:#6450a0;padding:12px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s;width:100%;font-family:'Lato',sans-serif}
+.sug-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(100,80,160,0.03);border:1px dashed rgba(100,80,160,0.22);color:#c8a96e;padding:12px 18px;border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.2s;width:100%;font-family:'Lato',sans-serif}
 .sug-btn:hover{background:rgba(100,80,160,0.07);border-color:rgba(100,80,160,0.3)}
 .sug-btn
 .sug-btn:disabled{opacity:0.45;cursor:not-allowed}
@@ -229,6 +229,14 @@ input.inp:focus{border-color:rgba(139,90,43,0.4)}
 textarea.bl-ta{width:100%;background:rgba(245,235,215,0.94);border:1px solid rgba(139,90,43,0.12);border-radius:7px;padding:9px 11px;font-size:13px;color:#1e0e04;line-height:1.6;font-family:'Lato',sans-serif;resize:none}
 textarea.bl-ta:focus{outline:none;border-color:rgba(139,90,43,0.35)}
 
+/* Report modal items */
+.report-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:rgba(245,235,215,0.85);border:1px solid rgba(139,90,43,0.1);border-radius:8px;cursor:pointer;transition:all 0.15s;user-select:none}
+.report-item.selected{background:rgba(139,90,43,0.08);border-color:rgba(139,90,43,0.25)}
+.report-item-check{width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(139,90,43,0.3);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all 0.15s}
+.report-item.selected .report-item-check{background:#8b5a2b;border-color:#8b5a2b;color:#fdf6e3}
+.report-item-title{font-family:'Cormorant Garamond',serif;font-size:15px;color:#1e0e04;margin-bottom:2px}
+.report-item-meta{font-size:10px;color:#a07850;letter-spacing:0.03em}
+
 /* Diary search */
 .diary-search-bar{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
 .diary-search-row{display:flex;gap:8px}
@@ -249,19 +257,19 @@ textarea.bl-ta:focus{outline:none;border-color:rgba(139,90,43,0.35)}
 
 /* Arm suggest */
 
-/* Espelho loading — ripple */
+/* Espelho loading — ripple elegante */
 @keyframes ripple-out {
-  0%   { r: 4; opacity: 0.9; }
+  0%   { r: 4; opacity: 0.8; }
   100% { r: 18; opacity: 0; }
 }
 @keyframes ripple-out-2 {
   0%   { r: 4; opacity: 0; }
-  30%  { opacity: 0.6; }
+  30%  { opacity: 0.5; }
   100% { r: 22; opacity: 0; }
 }
 @keyframes ripple-out-3 {
   0%   { r: 4; opacity: 0; }
-  50%  { opacity: 0.4; }
+  50%  { opacity: 0.3; }
   100% { r: 26; opacity: 0; }
 }
 @keyframes fade-cycle {
@@ -271,7 +279,7 @@ textarea.bl-ta:focus{outline:none;border-color:rgba(139,90,43,0.35)}
 }
 .btn-loading-wrap {
   display: flex; align-items: center; justify-content: center;
-  gap: 12px; width: 100%;
+  gap: 14px; width: 100%; padding: 0 4px;
 }
 .btn-ripple-svg { flex-shrink: 0; }
 .btn-ripple-svg circle:nth-child(1) {
@@ -284,8 +292,8 @@ textarea.bl-ta:focus{outline:none;border-color:rgba(139,90,43,0.35)}
   animation: ripple-out-3 1.8s ease-out infinite 0.8s;
 }
 .btn-loading-text {
-  font-size: 12px; letter-spacing: 0.08em; color: #6450a0;
-  position: relative; min-width: 100px; text-align: left;
+  font-size: 11px; letter-spacing: 0.1em; color: #c8a96e;
+  position: relative; min-width: 90px; text-align: left; text-transform: uppercase; font-weight: 400;
 }
 .btn-loading-text span {
   position: absolute; left: 0; top: 0; opacity: 0;
@@ -311,6 +319,12 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
 
   <!-- HOME -->
   <div id="page-home" class="page active">
+    <div class="inner-nav">
+      <button class="inner-tab active-tab" onclick="setTab('home')">Início</button>
+      <button class="inner-tab" onclick="setTab('diary')" id="tab-diary">Diário</button>
+      <button class="inner-tab" onclick="setTab('baseline')" id="tab-baseline">Estados Mentais</button>
+      <button class="inner-tab" onclick="setTab('about')" id="tab-about">Sobre</button>
+    </div>
     <div class="home-divider" style="margin-top:4px"></div>
 
     <p class="home-what">
@@ -421,7 +435,36 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
         </div>
       </div>
       <div id="diary-cards" class="card-list"></div>
+
+      <!-- Minha Jornada -->
+      <div style="text-align:center;margin-top:20px;padding-top:14px;border-top:1px solid rgba(139,90,43,0.08)">
+        <button onclick="openReportModal()" id="report-btn" style="background:rgba(139,90,43,0.06);border:1px solid rgba(139,90,43,0.18);font-size:12px;color:#8b5a2b;cursor:pointer;font-family:'Lato',sans-serif;letter-spacing:0.06em;padding:9px 22px;border-radius:20px;transition:all 0.2s;text-transform:uppercase">
+          ◈ &nbsp;Minha Jornada
+        </button>
+      </div>
     </div>
+
+  <!-- Modal: Minha Jornada -->
+  <div id="report-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:rgba(58,42,26,0.5);backdrop-filter:blur(4px)" onclick="closeReportModal(event)">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:#fdf6e3;border-radius:20px 20px 0 0;padding:28px 24px 40px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()">
+      <div style="width:36px;height:4px;background:rgba(139,90,43,0.2);border-radius:2px;margin:0 auto 22px"></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;font-style:italic;color:#2a1408;margin-bottom:6px">Minha Jornada</div>
+      <div style="font-size:12px;color:#a07850;line-height:1.6;margin-bottom:18px">Selecione os momentos a incluir. Seus Estados Mentais serão incluídos como contexto.</div>
+
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <button onclick="selectAllDiary(true)" style="flex:1;padding:8px;background:rgba(139,90,43,0.07);border:1px solid rgba(139,90,43,0.15);border-radius:7px;font-size:11px;color:#3a2008;cursor:pointer;font-family:'Lato',sans-serif">Selecionar todos</button>
+        <button onclick="selectAllDiary(false)" style="flex:1;padding:8px;background:transparent;border:1px solid rgba(139,90,43,0.12);border-radius:7px;font-size:11px;color:#a07850;cursor:pointer;font-family:'Lato',sans-serif">Limpar seleção</button>
+      </div>
+
+      <div id="report-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px"></div>
+
+      <textarea id="prompt-ta" style="display:none"></textarea>
+
+      <button onclick="copyReportPrompt()" id="copy-report-btn" style="width:100%;padding:13px;background:#8b5a2b;color:#fdf6e3;border:none;border-radius:8px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:'Lato',sans-serif">
+        ◈ &nbsp;Gerar prompt para análise
+      </button>
+    </div>
+  </div>
     <!-- NEW/EDIT -->
     <div id="diary-new" style="display:none">
       <div class="inner-nav">
@@ -518,10 +561,10 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
       <div style="height:1px;background:linear-gradient(to right,transparent,rgba(139,90,43,0.22),transparent);margin:14px 0 20px"></div>
 
       <p style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;line-height:1.8;color:#3a2008;margin-bottom:20px">
-        Um espaço de encontro consigo mesmo. Não um app de autoajuda, não uma ferramenta de produtividade, um companheiro de jornada para quem está trabalhando a transformação de dentro para fora.
+        Um espaço de encontro consigo mesmo. Não é um app de autoajuda nem uma ferramenta de produtividade. É um companheiro de jornada para quem está trabalhando a transformação de dentro para fora.
       </p>
       <p style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;line-height:1.8;color:#3a2008;margin-bottom:20px">
-        Aqui você traz o que surge na sua experiência, observa seus padrões sem julgamento, e caminha no ritmo que é seu. Sem sessões marcadas, sem frameworks clínicos, sem agenda terapêutica. Só você, sua intenção e o que escolhe fazer com o que vê.
+        Aqui você traz o que surge na sua experiência, observa seus padrões sem julgamento e caminha no seu próprio ritmo. Não há sessões marcadas, frameworks clínicos nem agenda terapêutica. Só você, a sua intenção e o que escolhe fazer com o que vê.
       </p>
 
       <!-- Para quem é -->
@@ -562,19 +605,64 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
         </div>
       </div>
 
+      <!-- Os estados mentais, de onde vêm -->
+      <div style="background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.18);border-radius:12px;padding:18px 20px;margin-bottom:20px">
+        <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#a07850;margin-bottom:10px">Os estados mentais</div>
+        <p style="font-size:13px;color:#3a2008;line-height:1.75;margin-bottom:10px">
+          Quando algo nos atravessa, raramente temos a palavra exata para o que sentimos. A maioria de nós nomeia o mundo interno com três cores apenas: bem, mal, mais ou menos. E o que não conseguimos nomear, tende a nos conduzir sem que percebamos.
+        </p>
+        <p style="font-size:13px;color:#3a2008;line-height:1.75;margin-bottom:10px">
+          Os estados mentais do Despertar são um pequeno vocabulário para você nomear com mais precisão o que estava vivo em cada momento. Eles foram reunidos a partir de quem estudou as emoções a fundo, gente que mapeou como elas se misturam, ganham intensidade e às vezes operam em silêncio, abaixo do que percebemos.
+        </p>
+        <p style="font-size:13px;color:#3a2008;line-height:1.75">
+          Não são rótulos sobre quem você é. São nomes para o que passou. E quanto melhor você nomeia, menos aquilo te governa sem aviso.
+        </p>
+      </div>
+
+      <!-- Como escolher, sem medo de errar -->
+      <div style="background:rgba(80,120,80,0.05);border:1px solid rgba(80,120,80,0.15);border-radius:12px;padding:18px 20px;margin-bottom:24px">
+        <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#5a8a5a;margin-bottom:10px">Como escolher, sem medo de errar</div>
+        <p style="font-size:13px;color:#3a4a3a;line-height:1.75;margin-bottom:10px">
+          Aqui não existe resposta certa. Ao registrar um momento, marque o que ressoa, o que parece ter estado presente, mesmo que você não tenha certeza. A dúvida faz parte. Comece pelo que você sente com mais frequência e nomeia com menos clareza.
+        </p>
+        <p style="font-size:13px;color:#3a4a3a;line-height:1.75">
+          Você não precisa acertar. Precisa só olhar com honestidade. Com o tempo, o vocabulário se afina sozinho, e você vai se reconhecendo com mais nitidez. Errar aqui é só uma forma de se aproximar.
+        </p>
+      </div>
+
       <!-- Como funciona -->
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;font-style:italic;color:#2a1408;margin-bottom:12px">Como funciona</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;font-style:italic;color:#2a1408;margin-bottom:6px">Como funciona, na prática</div>
+      <p style="font-size:12px;color:#a07850;line-height:1.6;margin-bottom:16px;font-style:italic">Quatro passos simples. Você guia o ritmo.</p>
 
       <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
-        <div style="border-left:2px solid rgba(200,169,110,0.4);padding-left:14px">
-          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#a07850;margin-bottom:4px">Diário</div>
-          <div style="font-size:13px;color:#3a2008;line-height:1.6">Registre situações e momentos que chamaram sua atenção. Para cada relato, selecione os estados mentais presentes, pontue seu estado atual (0 a 10) e descreva o que aconteceu, como se sentiu e o que escolhe fazer com o que vê.</div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#c8a96e;line-height:1;width:24px;flex-shrink:0">1</span>
+          <div>
+            <div style="font-size:11px;font-weight:400;letter-spacing:0.06em;text-transform:uppercase;color:#2a1408;margin-bottom:3px">Registre o momento</div>
+            <div style="font-size:13px;color:#3a2008;line-height:1.6">Algo te chamou atenção hoje? Traga para o Diário. O que surgiu, como você se percebeu, e o que escolhe fazer com isso.</div>
+          </div>
         </div>
-        <div style="border-left:2px solid rgba(200,169,110,0.4);padding-left:14px">
-          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#a07850;margin-bottom:4px">Estados Mentais</div>
-          <div style="font-size:13px;color:#3a2008;line-height:1.6">Seu gabarito pessoal. Para cada estado mental, registre como você se percebe em geral, quando e como ele aparece, e como gostaria que fosse. Este é seu ponto de partida, atualize quando sentir que mudou.</div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#c8a96e;line-height:1;width:24px;flex-shrink:0">2</span>
+          <div>
+            <div style="font-size:11px;font-weight:400;letter-spacing:0.06em;text-transform:uppercase;color:#2a1408;margin-bottom:3px">Nomeie o que estava vivo</div>
+            <div style="font-size:13px;color:#3a2008;line-height:1.6">Marque os estados mentais que ressoam com aquele momento e pontue a intensidade de cada um, de 0 a 10. Sem buscar acerto.</div>
+          </div>
         </div>
-
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#c8a96e;line-height:1;width:24px;flex-shrink:0">3</span>
+          <div>
+            <div style="font-size:11px;font-weight:400;letter-spacing:0.06em;text-transform:uppercase;color:#2a1408;margin-bottom:3px">Receba o espelho</div>
+            <div style="font-size:13px;color:#3a2008;line-height:1.6">Quando quiser, convide o espelho. Ele devolve o que você trouxe com mais clareza, sem interpretar, sem prescrever, sem dizer quem você é.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#c8a96e;line-height:1;width:24px;flex-shrink:0">4</span>
+          <div>
+            <div style="font-size:11px;font-weight:400;letter-spacing:0.06em;text-transform:uppercase;color:#2a1408;margin-bottom:3px">Volte quando fizer sentido</div>
+            <div style="font-size:13px;color:#3a2008;line-height:1.6">Com o tempo, os momentos formam uma jornada. Em Estados Mentais você guarda como se percebe em geral, seu ponto de partida, e atualiza quando sentir que mudou.</div>
+          </div>
+        </div>
       </div>
 
       <!-- Premissa anti-viés -->
@@ -608,6 +696,16 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
         <p style="font-size:13px;color:#3a2008;line-height:1.7;margin-top:8px">
           É aí que a mudança começa. Não na análise, não na sugestão, no momento em que você decide que vale a pena se ver de verdade.
         </p>
+      </div>
+
+      <!-- Convite final -->
+      <div style="text-align:center;background:rgba(200,169,110,0.1);border:1px solid rgba(200,169,110,0.25);border-radius:14px;padding:24px 22px;margin-bottom:20px">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;font-style:italic;color:#2a1408;line-height:1.5;margin-bottom:16px">
+          Não há jeito errado de começar.<br>Só o seu jeito.
+        </p>
+        <button onclick="setTab('diary'); showDiaryNew()" style="background:#8b5a2b;color:#fdf6e3;border:none;border-radius:22px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:'Lato',sans-serif;padding:12px 28px">
+          ✎ &nbsp;Registrar meu primeiro momento
+        </button>
       </div>
 
       <div style="text-align:center;padding:16px 0;font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:#c8b89a">
@@ -1033,7 +1131,7 @@ async function callAnthropicAPI(prompt) {
 async function callEspelhoFirst() {
   const btn = $('sug-btn');
   btn.disabled = true;
-  btn.innerHTML = '<div class="btn-loading-wrap">  <svg class="btn-ripple-svg" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">   <circle cx="14" cy="14" r="4" fill="none" stroke="#6450a0" stroke-width="1.2"/>   <circle cx="14" cy="14" r="4" fill="none" stroke="#6450a0" stroke-width="0.9" opacity="0"/>   <circle cx="14" cy="14" r="4" fill="none" stroke="#6450a0" stroke-width="0.6" opacity="0"/>   <circle cx="14" cy="14" r="2" fill="#6450a0" opacity="0.7"/>  </svg>  <div class="btn-loading-text">   <span>refletindo</span>   <span>observando</span>   <span>presente</span>  </div> </div>';
+  btn.innerHTML = '<div class="btn-loading-wrap">  <svg class="btn-ripple-svg" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">   <circle cx="14" cy="14" r="4" fill="none" stroke="#c8a96e" stroke-width="1.2"/>   <circle cx="14" cy="14" r="4" fill="none" stroke="#c8a96e" stroke-width="0.9" opacity="0"/>   <circle cx="14" cy="14" r="4" fill="none" stroke="#c8a96e" stroke-width="0.6" opacity="0"/>   <circle cx="14" cy="14" r="2" fill="#c8a96e" opacity="0.7"/>  </svg>  <div class="btn-loading-text">   <span>refletindo</span>   <span>observando</span>   <span>presente</span>  </div> </div>';
   try {
     const text = await callAnthropicAPI(buildPrompt());
     $('espelho-text-1').innerHTML = esc(text).replace(/\n/g,'<br>');
@@ -1071,7 +1169,7 @@ function buildSegundaRodadaPrompt() {
 async function callSegundaRodada() {
   const btn = $('segunda-btn');
   btn.disabled = true;
-  btn.innerHTML = '<div class="btn-loading-wrap">  <svg class="btn-ripple-svg" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">   <circle cx="14" cy="14" r="4" fill="none" stroke="#6450a0" stroke-width="1.2"/>   <circle cx="14" cy="14" r="4" fill="none" stroke="#6450a0" stroke-width="0.9" opacity="0"/>   <circle cx="14" cy="14" r="4" fill="none" stroke="#6450a0" stroke-width="0.6" opacity="0"/>   <circle cx="14" cy="14" r="2" fill="#6450a0" opacity="0.7"/>  </svg>  <div class="btn-loading-text">   <span>refletindo</span>   <span>observando</span>   <span>presente</span>  </div> </div>';
+  btn.innerHTML = '<div class="btn-loading-wrap">  <svg class="btn-ripple-svg" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">   <circle cx="14" cy="14" r="4" fill="none" stroke="#c8a96e" stroke-width="1.2"/>   <circle cx="14" cy="14" r="4" fill="none" stroke="#c8a96e" stroke-width="0.9" opacity="0"/>   <circle cx="14" cy="14" r="4" fill="none" stroke="#c8a96e" stroke-width="0.6" opacity="0"/>   <circle cx="14" cy="14" r="2" fill="#c8a96e" opacity="0.7"/>  </svg>  <div class="btn-loading-text">   <span>refletindo</span>   <span>observando</span>   <span>presente</span>  </div> </div>';
   try {
     const text = await callAnthropicAPI(buildSegundaRodadaPrompt());
     $('espelho-text-2').innerHTML = esc(text).replace(/\n/g,'<br>');
@@ -1408,6 +1506,111 @@ const DB = {
   }
 };
 
+
+// ─── Minha Jornada (Report Modal) ────────────────────────────
+var reportSelected = {};
+
+function openReportModal() {
+  if (!diary.length) { alert('Nenhum momento no diário ainda.'); return; }
+  diary.forEach(function(e) { reportSelected[e.id] = true; });
+  renderReportList();
+  document.getElementById('report-modal').style.display = 'block';
+}
+
+function closeReportModal(e) {
+  if (e.target === document.getElementById('report-modal')) {
+    document.getElementById('report-modal').style.display = 'none';
+  }
+}
+
+function selectAllDiary(val) {
+  diary.forEach(function(e) { reportSelected[e.id] = val; });
+  renderReportList();
+}
+
+function toggleReportItem(id) {
+  reportSelected[id] = !reportSelected[id];
+  renderReportList();
+}
+
+function renderReportList() {
+  var container = $('report-list');
+  if (!container) return;
+  var sorted = diary.slice().sort(function(a,b){ return b.createdAt - a.createdAt; });
+  container.innerHTML = sorted.map(function(e) {
+    var sel = reportSelected[e.id] ? ' selected' : '';
+    var label = e.title || (e.situation ? e.situation.substring(0,40)+'…' : 'Sem título');
+    var date = e.createdAt ? new Date(e.createdAt).toLocaleDateString('pt-BR') : '';
+    var states = (e.selectedItems||[]).map(function(id){
+      var a = ARMADILHAS.find(function(x){ return x.id===id; });
+      return a ? a.label : '';
+    }).filter(Boolean).join(', ');
+    return '<div class="report-item'+sel+'" onclick="toggleReportItem('+e.id+')">' +
+      '<div class="report-item-check">✓</div>' +
+      '<div><div class="report-item-title">'+esc(label)+'</div>' +
+      '<div class="report-item-meta">'+date+(states?' · '+states:'')+'</div></div>' +
+      '</div>';
+  }).join('');
+}
+
+function copyReportPrompt() {
+  var selected = diary.filter(function(e){ return reportSelected[e.id]; });
+  if (!selected.length) { alert('Selecione ao menos um momento.'); return; }
+
+  var sorted = selected.slice().sort(function(a,b){ return a.createdAt - b.createdAt; });
+
+  var momentos = sorted.map(function(e, i) {
+    var states = (e.selectedItems||[]).map(function(id){
+      var a = ARMADILHAS.find(function(x){ return x.id===id; });
+      var score = (e.scores||{})[id] || 5;
+      return a ? a.label + ' ('+score+'/10)' : '';
+    }).filter(Boolean).join(', ');
+    var date = e.createdAt ? new Date(e.createdAt).toLocaleDateString('pt-BR') : '';
+    return 'MOMENTO '+(i+1)+' — '+date+'\n'+
+      (e.title ? 'Título: '+e.title+'\n' : '')+
+      (e.situation ? 'O que surgiu: '+e.situation+'\n' : '')+
+      (e.howfelt ? 'Como me percebi: '+e.howfelt+'\n' : '')+
+      (e.action ? 'Escolha e ação: '+e.action+'\n' : '')+
+      (states ? 'Estados presentes: '+states : '');
+  }).join('\n\n---\n\n');
+
+  var gabarito = ARMADILHAS.map(function(a) {
+    var bl = (baseline||{})[a.id]||{};
+    if (!bl.note && !bl.when && !bl.ideal) return null;
+    return a.label + ': '+[bl.note, bl.when, bl.ideal].filter(Boolean).join(' | ');
+  }).filter(Boolean).join('\n');
+
+  var prompt =
+    'Você é um espelho honesto. Analise os momentos abaixo e responda em 4 pontos:\n\n' +
+    '1. O que genuinamente se transformou ao longo do tempo\n' +
+    '2. O que ainda é padrão ativo e persistente\n' +
+    '3. O arco de evolução visível — de onde partiu, onde está\n' +
+    '4. Um único convite para o próximo ciclo\n\n' +
+    'Tom: espelho honesto da jornada real. Sem elogios. Sem dramatizar dificuldades. Texto corrido, máximo 400 palavras.\n\n' +
+    (gabarito ? '=== ESTADOS MENTAIS (gabarito pessoal) ===\n'+gabarito+'\n\n' : '') +
+    '=== MOMENTOS SELECIONADOS ===\n\n' + momentos;
+
+  var ta = $('prompt-ta');
+  ta.value = prompt;
+  var btn = $('copy-report-btn');
+  var origText = btn.innerHTML;
+
+  var copy = function() {
+    btn.innerHTML = '✓ &nbsp;Copiado — cole no chat com Claude';
+    btn.style.background = 'rgba(80,120,80,0.85)';
+    setTimeout(function() {
+      btn.innerHTML = origText;
+      btn.style.background = '#8b5a2b';
+      document.getElementById('report-modal').style.display = 'none';
+    }, 2500);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(prompt).then(copy).catch(function() {
+      ta.select(); document.execCommand('copy'); copy();
+    });
+  } else { ta.select(); document.execCommand('copy'); copy(); }
+}
 
 // ─── UI: Sincronizacao ────────────────────────────────────────
 function updateSyncStatus(text, color) {
