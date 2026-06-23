@@ -512,7 +512,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
         <div class="section">
           <div class="lbl">Espelho <span class="opt">&middot; IA</span></div>
           <div class="hint">A devolutiva chega direto aqui &mdash; sem copiar ou colar</div>
-          <button class="sug-btn" id="sug-btn" onclick="callEspelhoFirst()" disabled>&#10022; &nbsp;Abrir o Espelho (IA)</button>
+          <button class="sug-btn" id="sug-btn" onclick="callEspelhoFirst()" disabled>&#10022; &nbsp;Abrir Espelho</button>
           <input type="hidden" id="d-suggestion" value="">
           <div id="espelho-output-1" class="sug-box" style="display:none;margin-top:14px">
             <div class="sug-star">&#10022;</div>
@@ -753,6 +753,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
 const SK_DIARY    = 'despertar-diary-v1';
 const SK_BASELINE = 'despertar-baseline-v1';
 const SK_JOURNEY_ANALYSES = 'despertar-journey-analyses-v1';
+const SK_DIARY_DRAFT = 'despertar-diary-draft-v1';
 
 // ════════════════════════════════════════════════════════════════
 // LAYER 2 — SEEDS
@@ -788,7 +789,7 @@ const SEED2 = {
 // ════════════════════════════════════════════════════════════════
 
 const DESPERTAR_CONFIG = {
-  versao: { id: 'v6.5.0', data: '2026-06-17' },
+  versao: { id: 'v6.6.0', data: '2026-06-17' },
   bussola: {
     acronimo: 'AMOR',
     vetores: [
@@ -925,7 +926,7 @@ function checkOnline() {
   } else {
     notice.style.display = 'none';
     setSyncStatus(DB.ready);
-    if (DB.ready) DB.flushQueue();
+    if (DB.ready) { DB.flushQueue(); flushJourneyQueue(); }
   }
 }
 window.addEventListener('online',  checkOnline);
@@ -960,12 +961,51 @@ function showDiaryList() {
   $('diary-list').style.display=''; $('diary-new').style.display='none'; $('diary-detail').style.display='none';
   renderDiaryList();
 }
+// Rascunho: protege a reflexão da IA contra fechamento acidental do app
+// antes do usuário clicar em Salvar. So se aplica a momentos NOVOS — editar
+// um momento já salvo nunca sobrescreve o rascunho.
+function saveDiaryDraft() {
+  if (editDiaryId) return;
+  var draft = {
+    title: $('d-title').value,
+    situation: $('d-situation').value,
+    howFelt: $('d-howfelt').value,
+    action: $('d-action').value,
+    suggestion: $('d-suggestion').value,
+    reflexaoUsuario: $('d-resposta-2').value,
+    seuPresente: $('espelho-text-2').innerText.trim(),
+    selectedItems: [...dSelectedItems],
+    scores: {...dScores}
+  };
+  localStorage.setItem(SK_DIARY_DRAFT, JSON.stringify(draft));
+}
+function clearDiaryDraft() {
+  localStorage.removeItem(SK_DIARY_DRAFT);
+}
+function getDiaryDraft() {
+  try {
+    var d = localStorage.getItem(SK_DIARY_DRAFT);
+    return d ? JSON.parse(d) : null;
+  } catch(e) { return null; }
+}
+
 function showDiaryNew(entry=null) {
   window.scrollTo(0, 0);
   $('diary-list').style.display='none'; $('diary-new').style.display=''; $('diary-detail').style.display='none';
-  editDiaryId = entry ? entry.id : null;
-  $('diary-form-title').textContent = entry ? 'Editar Momento' : 'Novo Momento';
-  $('diary-form-date').textContent = entry
+  var isEditing = !!(entry && entry.id);
+  if (!entry) {
+    var draft = getDiaryDraft();
+    if (draft && (draft.situation || draft.suggestion)) {
+      if (confirm('Você tem uma reflexão não finalizada. Continuar de onde parou?')) {
+        entry = draft;
+      } else {
+        clearDiaryDraft();
+      }
+    }
+  }
+  editDiaryId = isEditing ? entry.id : null;
+  $('diary-form-title').textContent = isEditing ? 'Editar Momento' : 'Novo Momento';
+  $('diary-form-date').textContent = isEditing
     ? fmtDate(entry.createdAt)
     : new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
   $('d-title').value = (entry && entry.title)||'';
@@ -993,7 +1033,7 @@ function showDiaryNew(entry=null) {
   dSelectedItems = entry ? [...(entry.selectedItems||[])] : [];
   dScores = entry ? {...(entry.scores||{})} : {};
   renderChips(); renderSliders(); updateSugBtn();
-  $('diary-save-btn').textContent = entry ? 'Salvar' : 'Trazer este momento';
+  $('diary-save-btn').textContent = isEditing ? 'Salvar' : 'Trazer este momento';
 }
 function showDiaryDetail(id) {
   selDiaryId = id;
@@ -1143,11 +1183,12 @@ async function callEspelhoFirst() {
     $('espelho-output-1').style.display = '';
     $('d-suggestion').value = text;
     $('segunda-rodada-wrap').style.display = '';
+    saveDiaryDraft();
   } catch(e) {
     alert('Erro ao conectar com a IA. Tente novamente.');
   }
   btn.disabled = false;
-  btn.innerHTML = '\u2726\u00a0\u00a0Abrir o Espelho (IA)';
+  btn.innerHTML = '\u2726\u00a0\u00a0Abrir Espelho';
 }
 
 function buildSegundaRodadaPrompt() {
@@ -1179,6 +1220,7 @@ async function callSegundaRodada() {
     const text = await callAnthropicAPI(buildSegundaRodadaPrompt());
     $('espelho-text-2').innerHTML = esc(text).replace(/\n/g,'<br>');
     $('espelho-output-2').style.display = '';
+    saveDiaryDraft();
   } catch(e) {
     alert('Erro ao conectar com a IA. Tente novamente.');
   }
@@ -1207,7 +1249,8 @@ function saveDiary() {
   };
   if(editDiaryId) { const i=diary.findIndex(e=>e.id===editDiaryId); if(i>=0)diary[i]=entry; else diary.unshift(entry); }
   else { diary.unshift(entry); }
-  save('diary'); 
+  save('diary');
+  clearDiaryDraft();
   
   // Sincroniza com Supabase se disponivel
   if (DB.ready) DB.saveEntry(entry);
@@ -1669,13 +1712,26 @@ async function callJourneyAPI(prompt, momentIds) {
 
 async function saveJourneyAnalysis(entry) {
   if(!journeyAnalyses) journeyAnalyses = [];
+  entry.synced = false;
   journeyAnalyses.push(entry);
   localStorage.setItem(SK_JOURNEY_ANALYSES, JSON.stringify(journeyAnalyses));
   if (DB.ready) {
     var ok = await DB.saveJourneyAnalysis(entry);
+    if (ok) { entry.synced = true; localStorage.setItem(SK_JOURNEY_ANALYSES, JSON.stringify(journeyAnalyses)); }
     return ok;
   }
   return false;
+}
+
+// Tenta sincronizar jornadas que ficaram pendentes (Supabase não estava pronto na hora)
+async function flushJourneyQueue() {
+  if (!DB.ready || !journeyAnalyses || !journeyAnalyses.length) return;
+  var pending = journeyAnalyses.filter(function(e){ return !e.synced; });
+  for (var i = 0; i < pending.length; i++) {
+    var ok = await DB.saveJourneyAnalysis(pending[i]);
+    if (ok) pending[i].synced = true;
+  }
+  localStorage.setItem(SK_JOURNEY_ANALYSES, JSON.stringify(journeyAnalyses));
 }
 
 function displayJourneyAnalysis(analysis, synced) {
@@ -1704,6 +1760,7 @@ function syncAllNow() {
     var ok = DB.init();
     if (!ok) { if(el) el.textContent = 'Erro ao inicializar Supabase.'; return; }
   }
+  flushJourneyQueue();
   var userDiary = diary.filter(function(e){ return e.id !== SEED.id && e.id !== SEED2.id; });
   if (!userDiary.length) { if(el) el.textContent = 'Nenhum relato para sincronizar.'; return; }
   if(el) el.textContent = 'Sincronizando ' + userDiary.length + ' relato(s)...';
@@ -1732,6 +1789,7 @@ checkOnline();
 setTimeout(function() {
   if (DB.init()) {
     DB.notify(true);
+    flushJourneyQueue();
     DB.flushQueue().then(function() {
       DB.load().then(function(loaded) {
         if (loaded) renderAll();
