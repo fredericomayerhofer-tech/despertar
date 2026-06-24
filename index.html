@@ -452,9 +452,10 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;font-style:italic;color:#2a1408;margin-bottom:6px">Minha Jornada</div>
       <div style="font-size:12px;color:#a07850;line-height:1.6;margin-bottom:18px">Selecione os momentos a incluir. Seus Estados Mentais serão incluídos como contexto.</div>
 
-      <div style="display:flex;gap:10px;margin-bottom:14px">
-        <button onclick="selectAllDiary(true)" style="flex:1;padding:8px;background:rgba(139,90,43,0.07);border:1px solid rgba(139,90,43,0.15);border-radius:7px;font-size:11px;color:#3a2008;cursor:pointer;font-family:'Lato',sans-serif">Selecionar todos</button>
-        <button onclick="selectAllDiary(false)" style="flex:1;padding:8px;background:transparent;border:1px solid rgba(139,90,43,0.12);border-radius:7px;font-size:11px;color:#a07850;cursor:pointer;font-family:'Lato',sans-serif">Limpar seleção</button>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button onclick="selectAllDiary(true)" style="flex:1;padding:7px 4px;background:rgba(139,90,43,0.07);border:1px solid rgba(139,90,43,0.15);border-radius:7px;font-size:10px;color:#3a2008;cursor:pointer;font-family:'Lato',sans-serif;text-align:center;line-height:1.3">Selecionar todos</button>
+        <button onclick="selectAllDiary(false)" style="flex:1;padding:7px 4px;background:transparent;border:1px solid rgba(139,90,43,0.12);border-radius:7px;font-size:10px;color:#a07850;cursor:pointer;font-family:'Lato',sans-serif;text-align:center;line-height:1.3">Limpar seleção</button>
+        <button onclick="baixarSelecao()" style="flex:1;padding:7px 4px;background:rgba(139,90,43,0.07);border:1px solid rgba(139,90,43,0.15);border-radius:7px;font-size:10px;color:#3a2008;cursor:pointer;font-family:'Lato',sans-serif;text-align:center;line-height:1.3">↓ Salvar seleção</button>
       </div>
 
       <div id="report-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px"></div>
@@ -789,7 +790,7 @@ const SEED2 = {
 // ════════════════════════════════════════════════════════════════
 
 const DESPERTAR_CONFIG = {
-  versao: { id: 'v6.6.0', data: '2026-06-17' },
+  versao: { id: 'v6.6.1', data: '2026-06-24' },
   bussola: {
     acronimo: 'AMOR',
     vetores: [
@@ -1597,6 +1598,71 @@ function selectAllDiary(val) {
 function toggleReportItem(id) {
   reportSelected[id] = !reportSelected[id];
   renderReportList();
+}
+
+function baixarSelecao() {
+  var selected = diary.filter(function(e){ return reportSelected[e.id]; });
+  if (!selected.length) { alert('Selecione ao menos um momento.'); return; }
+
+  var sorted = selected.slice().sort(function(a,b){ return a.createdAt - b.createdAt; });
+
+  var linhas = ['DESPERTAR — Relatos Selecionados', new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}), ''];
+
+  sorted.forEach(function(e, i) {
+    var sep = '════════════════════════════════════════';
+    linhas.push(sep);
+
+    var data = e.createdAt ? new Date(e.createdAt).toLocaleDateString('pt-BR', {weekday:'long',day:'2-digit',month:'long',year:'numeric'}) : '';
+    linhas.push((e.title || 'Sem título') + (data ? '   ·   ' + data : ''));
+    linhas.push('');
+
+    // Estados marcados com scores
+    if (e.selectedItems && e.selectedItems.length) {
+      linhas.push('Estados presentes:');
+      e.selectedItems.forEach(function(id) {
+        var a = ARMADILHAS.find(function(x){ return x.id === id; });
+        var sc = (e.scores || {})[id];
+        var scLabel = sc !== undefined ? ' (' + sc + '/10 · ' + scoreLabel(sc) + ')' : '';
+        if (a) linhas.push('  · ' + a.label + scLabel);
+      });
+      linhas.push('');
+    }
+
+    if (e.situation) { linhas.push('O que surgiu:'); linhas.push(e.situation); linhas.push(''); }
+    if (e.howfelt)   { linhas.push('Como me percebi:'); linhas.push(e.howfelt); linhas.push(''); }
+    if (e.action)    { linhas.push('O que escolho:'); linhas.push(e.action); linhas.push(''); }
+
+    if (e.suggestion) {
+      linhas.push('── Espelho ──────────────────────────────');
+      linhas.push(e.suggestion);
+      linhas.push('');
+    }
+
+    if (e.reflexaoUsuario) {
+      linhas.push('── Reflexão ─────────────────────────────');
+      linhas.push(e.reflexaoUsuario);
+      linhas.push('');
+    }
+
+    if (e.seuPresente) {
+      linhas.push('── Seu presente ─────────────────────────');
+      linhas.push(e.seuPresente);
+      linhas.push('');
+    }
+  });
+
+  linhas.push('════════════════════════════════════════');
+  linhas.push('');
+  linhas.push(sorted.length + ' momento' + (sorted.length > 1 ? 's' : '') + ' · Despertar ' + DESPERTAR_CONFIG.versao.id);
+
+  var txt = linhas.join('\n');
+  var blob = new Blob([txt], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'despertar-relatos-' + new Date().toISOString().split('T')[0] + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function renderReportList() {
