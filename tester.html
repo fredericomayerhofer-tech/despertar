@@ -199,6 +199,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
     <div class="divider"></div>
     <div class="ia-note">Caso escolha interagir com a IA, não é para aconselhamento, é para trazer mais luz sobre o que está posto.</div>
     <button class="save-btn" id="baixar-btn" onclick="baixarTxt()" disabled>↓ &nbsp;Baixar este momento (.txt)</button>
+    <button class="save-btn" id="novo-btn" onclick="novoRelato()" style="margin-top:10px;background:transparent;border-color:rgba(139,90,43,0.25);color:#a07850">↺ &nbsp;Novo relato</button>
   </div>
 
 </div>
@@ -503,6 +504,29 @@ function baixarTxt() {
   a.download = 'despertar-' + new Date().toISOString().split('T')[0] + '.txt';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function novoRelato() {
+  if (!confirm('Limpar todos os campos e começar um novo relato?')) return;
+  $('d-title').value = '';
+  $('d-situation').value = '';
+  $('d-howfelt').value = '';
+  $('d-action').value = '';
+  $('d-suggestion').value = '';
+  $('d-resposta-2').value = '';
+  $('espelho-text-1').innerHTML = '';
+  $('espelho-text-2').innerHTML = '';
+  $('espelho-output-1').style.display = 'none';
+  $('espelho-output-2').style.display = 'none';
+  $('segunda-rodada-wrap').style.display = 'none';
+  $('d-scores-section').style.display = 'none';
+  dSelectedItems = [];
+  dScores = {};
+  renderChips();
+  renderAvg();
+  updateSugBtn();
+  $('baixar-btn').disabled = true;
+  window.scrollTo(0, 0);
 }
 
 // ═══════════════════════════════════════════════════════════════
