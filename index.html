@@ -790,7 +790,7 @@ const SEED2 = {
 // ════════════════════════════════════════════════════════════════
 
 const DESPERTAR_CONFIG = {
-  versao: { id: 'v6.6.1', data: '2026-06-24' },
+  versao: { id: 'v6.6.2', data: '2026-06-30' },
   bussola: {
     acronimo: 'AMOR',
     vetores: [
@@ -1154,7 +1154,7 @@ function buildPrompt() {
     'INSTRU\u00c7\u00d5ES:\n' +
     '0. ESTADOS PRESENTES: Com base neste relato, identifique at\u00e9 3 estados que realmente aparecem. Se apenas 1 ou 2 aparecem, liste s\u00f3 esses. Responda com n\u00famero, nome e uma linha explicando por que aparece neste relato. Sem introdu\u00e7\u00e3o, sem julgamento. Estado presente \u00e9 o que o usu\u00e1rio nomeou ou expressou sentir. Comportamento descrito n\u00e3o \u00e9 evid\u00eancia suficiente de estado emocional.\n' + armList + '\n\n' +
     '1. ESPELHO: Texto corrido (m\u00e1x 250 palavras). Descreva: o que surgiu, o que apareceu (padr\u00e3o), o que mudou. SEM celebra\u00e7\u00e3o, sem valida\u00e7\u00e3o, sem linguagem de autoajuda. Use "parece" e "h\u00e1 indica\u00e7\u00e3o de" para descrever o que o momento revela. NUNCA use "costuma", implica recorr\u00eancia que um \u00fanico relato n\u00e3o sustenta. Se o usu\u00e1rio usou "toda vez", "sempre", "costumo": nomeie o que apareceu NESTE momento, n\u00e3o repita a generaliza\u00e7\u00e3o como fato estabelecido. N\u00e3o explique causa. N\u00e3o infira cen\u00e1rios n\u00e3o descritos. Preserve a ordem temporal do relato. N\u00e3o reorganize eventos para criar narrativa diferente da que o usu\u00e1rio descreveu. EVITE linguagem anal\u00edtica ou diagn\u00f3stica, exemplos: "revela", "o padr\u00e3o que aparece \u00e9", "estruturalmente", "fica claro que", "em ess\u00eancia", "no fundo", "trata-se de", "\u00e9 um padr\u00e3o de", "o que isso mostra". Evite tamb\u00e9m qualquer outra express\u00e3o que conclua significado, classifique ou resuma o que o relato \u00e9.\n\n' +
-    '2. REFLETIR: 3 frases. Frase 1: observa\u00e7\u00e3o factual do que aparece no relato, sem qualificar (n\u00e3o "decis\u00e3o clara", mas "decis\u00e3o tomada"). Frase 2: descreve o que est\u00e1 presente no relato: uma coisa, duas, tens\u00e3o ou vazio, conforme o que aparece. Sem impor estrutura de coexist\u00eancia. Sem pesar os lados. Sem generalizar padr\u00e3o como tra\u00e7o; se o usu\u00e1rio generalizou sobre si mesmo, nomeie o que apareceu neste momento, n\u00e3o repita a generaliza\u00e7\u00e3o. Frase 3: pergunta direta e simples nascida da tens\u00e3o emocional presente no relato, colorida pela B\u00fassola conforme calibra\u00e7\u00e3o. A pergunta abre, nunca estreita. N\u00e3o pede explica\u00e7\u00e3o de evento. N\u00e3o oferece caminhos impl\u00edcitos. Se o relato n\u00e3o apresenta tens\u00e3o clara, a pergunta nasce de uma coexist\u00eancia presente ou de algo que ficou sem nome. Nunca force tens\u00e3o onde o relato n\u00e3o a cont\u00e9m. Nunca: tarefa, m\u00e9todo, prescri\u00e7\u00e3o, generaliza\u00e7\u00e3o de padr\u00e3o como tra\u00e7o.\n\n' +
+    '2. REFLETIR: 3 frases. Frase 1: observa\u00e7\u00e3o factual do que aparece no relato, sem qualificar (n\u00e3o "decis\u00e3o clara", mas "decis\u00e3o tomada"). Frase 2: descreve o que est\u00e1 presente no relato: uma coisa, duas, tens\u00e3o ou vazio, conforme o que aparece. Sem impor estrutura de coexist\u00eancia. Sem pesar os lados. Sem generalizar padr\u00e3o como tra\u00e7o; se o usu\u00e1rio generalizou sobre si mesmo, nomeie o que apareceu neste momento, n\u00e3o repita a generaliza\u00e7\u00e3o. Frase 3: pergunta direta e simples, nascida da tens\u00e3o presente, com uma camada s\u00f3. Use o vocabul\u00e1rio do pr\u00f3prio relato. A pergunta abre, nunca estreita. N\u00e3o pede explica\u00e7\u00e3o de evento. N\u00e3o oferece caminhos impl\u00edcitos. Se o relato n\u00e3o apresenta tens\u00e3o clara, a pergunta nasce de uma coexist\u00eancia presente ou de algo que ficou sem nome. Nunca force tens\u00e3o onde o relato n\u00e3o a cont\u00e9m. Nunca: tarefa, m\u00e9todo, prescri\u00e7\u00e3o, generaliza\u00e7\u00e3o de padr\u00e3o como tra\u00e7o.\n\n' +
     'PROTE\u00c7\u00d5ES: Padr\u00e3o n\u00e3o \u00e9 identidade. N\u00e3o celebre progresso. Deixe espa\u00e7o para o usu\u00e1rio reconhecer a origem. B\u00fassola orienta tom, n\u00e3o substitui o que emerge.';
 }
 
@@ -1208,7 +1208,7 @@ function buildSegundaRodadaPrompt() {
     'Quando resposta densa e emocional \u2192 B\u00fassola m\u00ednima: tom neutro\n' +
     'Quando resposta com questionamento \u2192 B\u00fassola moderada: pergunta colorida\n' +
     'Quando resposta com reflex\u00e3o ativa e dist\u00e2ncia observadora \u2192 B\u00fassola plena: O + M priorit\u00e1rios, verbo observa, dist\u00e2ncia\n\n' +
-    'FORMATO: M\u00e1ximo 3 a 4 frases + pergunta. Pergunta nasce da tens\u00e3o real, n\u00e3o de m\u00e9todo, n\u00e3o de prescri\u00e7\u00e3o. ' +
+    'FORMATO: M\u00e1ximo 3 a 4 frases + pergunta. Pergunta nasce da tens\u00e3o real, n\u00e3o de m\u00e9todo, n\u00e3o de prescri\u00e7\u00e3o. Uma camada s\u00f3. Use o vocabul\u00e1rio exato da resposta do usu\u00e1rio. ' +
     'B\u00fassola presente no verbo e na dire\u00e7\u00e3o, nunca anunciada.\n\n' +
     'NUNCA: diagn\u00f3stico, completar o que o usu\u00e1rio trouxe, inferir estrutura al\u00e9m do relato, validar elabora\u00e7\u00e3o anterior, prescrever.';
 }
@@ -1629,7 +1629,7 @@ function baixarSelecao() {
     }
 
     if (e.situation) { linhas.push('O que surgiu:'); linhas.push(e.situation); linhas.push(''); }
-    if (e.howfelt)   { linhas.push('Como me percebi:'); linhas.push(e.howfelt); linhas.push(''); }
+    if (e.howFelt)   { linhas.push('Como me percebi:'); linhas.push(e.howFelt); linhas.push(''); }
     if (e.action)    { linhas.push('O que escolho:'); linhas.push(e.action); linhas.push(''); }
 
     if (e.suggestion) {
@@ -1656,7 +1656,7 @@ function baixarSelecao() {
   linhas.push(sorted.length + ' momento' + (sorted.length > 1 ? 's' : '') + ' · Despertar ' + DESPERTAR_CONFIG.versao.id);
 
   var txt = linhas.join('\n');
-  var blob = new Blob([txt], { type: 'text/plain' });
+  var blob = new Blob(['\ufeff' + txt], { type: 'text/plain;charset=utf-8' });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
@@ -1701,7 +1701,7 @@ function generateJourneyAnalysis() {
     return 'MOMENTO '+(i+1)+' — '+date+'\n'+
       (e.title ? 'Título: '+e.title+'\n' : '')+
       (e.situation ? 'O que surgiu: '+e.situation+'\n' : '')+
-      (e.howfelt ? 'Como me percebi: '+e.howfelt+'\n' : '')+
+      (e.howFelt ? 'Como me percebi: '+e.howFelt+'\n' : '')+
       (e.action ? 'Escolha e ação: '+e.action+'\n' : '')+
       (states ? 'Estados presentes: '+states : '');
   }).join('\n\n---\n\n');
